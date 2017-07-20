@@ -29,7 +29,7 @@ import tensorflow as tf
 #TODO:
 #Allow for flipping image distortion (that is, modify the label accordingly). Similarly, fancier augmentations of the data also require altering the labels
 
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 1000
+NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 15000
 NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 10000
 DATA_DIR="TimeStampedOriginal/centerImages/" #NOTE: Change this accordingly to match whether the data is for training or testing. Should probably modify to use python flags
 LOG_FILE="TimeStampedOriginal/approximatedStamps.txt"
