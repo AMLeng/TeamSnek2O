@@ -15,7 +15,8 @@
 
 ##THIS FILE HAS BEEN MODIFIED FOR THE NWAP WORKSHOP
 #Modifications finished? (Except for renaming import)
-
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
