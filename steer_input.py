@@ -44,7 +44,7 @@ def get_names_and_labels():
   labels=[]
   while(len(line)>0):
     totalstring=line.split(" ")
-    files.append(totalstring[0])
+    files.append(DATA_DIR+totalstring[0])
     labels.append(float(totalstring[1]))
     line=labelfile.readline()
   return files,labels
