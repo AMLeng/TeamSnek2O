@@ -22,14 +22,14 @@ from __future__ import print_function
 
 from datetime import datetime
 import time
-
+import sys
 import tensorflow as tf
 
 import steer
 #Batch size of 128
 
-STEPS_TO_TRAIN=100000
-LOG_RATE=10
+STEPS_TO_TRAIN=10
+LOG_RATE=1
 TRAINING_DIR="tmp/steering_train"
 
 
@@ -80,6 +80,7 @@ def train():
                         'sec/batch)')
           print (format_str % (datetime.now(), self._step, loss_value,
                                examples_per_sec, sec_per_batch))
+          sys.stdout.flush()
 
     print("Beginning Training")
     with tf.train.MonitoredTrainingSession(
