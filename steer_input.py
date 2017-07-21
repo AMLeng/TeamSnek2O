@@ -171,7 +171,7 @@ def inputs(data_dir, batch_size):
     reshaped_image = tf.cast(read_input.uint8image, tf.float32)
 
     # Subtract off the mean and divide by the variance of the pixels.
-    float_image = tf.image.per_image_standardization(distorted_image)
+    float_image = tf.image.per_image_standardization(reshaped_image)
 
     # Set the shapes of tensors.
     float_image.set_shape([GLOBALHEIGHT, GLOBALWIDTH, 3])
