@@ -93,7 +93,7 @@ def _variable_with_weight_decay(name, shape, stddev, wd):
     return var
 
 
-def distorted_inputs():
+def distorted_inputs(data_dir=DATA_DIR, batch_size=BATCH_SIZE):
     """Construct distorted input for training using the Reader ops.
     Returns:
       images: Images. 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
@@ -101,8 +101,7 @@ def distorted_inputs():
     Raises:
       ValueError: If no data_dir
     """
-    images, labels = steer_input.distorted_inputs(data_dir=DATA_DIR,
-                                                  batch_size=BATCH_SIZE)
+    images, labels = steer_input.distorted_inputs(data_dir, batch_size)
     return images, labels
 
 
