@@ -19,11 +19,11 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
 from datetime import datetime
 import time
 import sys
 import tensorflow as tf
-import steer
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -31,7 +31,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 STEPS_TO_TRAIN = 10
 LOG_RATE = 1
 TRAINING_DIR = "tmp/steering_train"
-
 
 def train():
     """Train for a number of steps."""
@@ -45,7 +44,6 @@ def train():
             images, labels = steer.distorted_inputs()
         print("Images read")
         sys.stdout.flush()
-
         # Build a Graph that computes the logits predictions from the
         # inference model.
         logits = steer.inference(images)

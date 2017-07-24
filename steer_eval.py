@@ -28,7 +28,6 @@ import steer_input
 import math
 
 import os
-
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 EVAL_DIR = 'tmp/steering_eval'

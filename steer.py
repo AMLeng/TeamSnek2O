@@ -91,7 +91,6 @@ def _variable_with_weight_decay(name, shape, stddev, wd):
         tf.add_to_collection('losses', weight_decay)
     return var
 
-
 def distorted_inputs(data_dir=DATA_DIR, batch_size=BATCH_SIZE):
     """Construct distorted input for training using the Reader ops.
     Returns:
@@ -217,7 +216,6 @@ def loss(outputs, targets):
     Calculate L2 loss
     """
     return tf.reduce_mean(tf.square(tf.subtract(outputs, targets)))
-
 
 def _add_loss_summaries(total_loss):
     """Add summaries for losses in model.

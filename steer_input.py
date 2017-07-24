@@ -49,7 +49,6 @@ def get_names_and_labels(data_dir):
         line = labelfile.readline()
     return files, labels
 
-
 def read_image(filename_queue):
     class ImageRecord(object):
         pass
@@ -76,7 +75,6 @@ def _generate_image_and_label_batch(image, label, min_queue_examples,
     Returns:
       images: Images. 4D tensor of [batch_size, height, width, 3] size.
       labels: Labels. 1D tensor of [batch_size] size.
-
     """
     # Create a queue that shuffles the examples, and then
     # read 'batch_size' images + labels from the example queue.
@@ -153,7 +151,6 @@ def distorted_inputs(data_dir, batch_size):  # MUST SET HEIGHT AND WIDTH
                                            min_queue_examples, batch_size,
                                            shuffle=True)
 
-
 def inputs(data_dir, batch_size):
     """Construct distorted input for training using the Reader ops.
     Args:
@@ -178,7 +175,6 @@ def inputs(data_dir, batch_size):
 
     # Set the shapes of tensors.
     float_image.set_shape([GLOBALHEIGHT, GLOBALWIDTH, 3])
-
     read_input.label.set_shape([])
 
     # Ensure that the random shuffling has good mixing properties.
