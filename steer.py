@@ -46,6 +46,7 @@ import steer_input
 # Basic model parameters.
 BATCH_SIZE=128
 DATA_DIR="TimeStampedOriginal/centerImages/"
+EVAL_DATA_DIR="TimeStampedOriginal/centerImages/"
 # Global constants describing the data set.
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = steer_input.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
 NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = steer_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
@@ -59,8 +60,9 @@ INITIAL_LEARNING_RATE = 0.1             # Initial learning rate.
 
 
 
-def _variable_on_cpu(name, shape, initializer):
+def _variable_on_cpu(name, shape, initializer): 
     """Helper to create a Variable stored on CPU memory.
+    We want variables pinned to the CPU so that they can be accessed if using multiple GPUs
     Args:
         name: name of the variable
         shape: list of ints
@@ -120,7 +122,7 @@ def inputs():
     Raises:
         ValueError: If no data_dir
     """
-    images, labels = steer_input.inputs(data_dir=DATA_DIR,batch_size=BATCH_SIZE)
+    images, labels = steer_input.inputs(data_dir=EVAL_DATA_DIR,batch_size=BATCH_SIZE)
     return images, labels
 
 

@@ -81,24 +81,12 @@ def evaluate():
                 print('No checkpoint file found')
                 return
 
-            """
-            tf.train.start_queue_runners(sess)
-            print(str(datetime.now()) + " " + sess.run(loss_op))
-            sys.stdout.flush()
-            """
             # Start the queue runners.
             coord = tf.train.Coordinator()
             try:
                 threads = []
                 for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
                     threads.extend(qr.create_threads(sess, coord=coord, daemon=True,start=True))
-
-                """
-                # Calculate loss.
-                loss=sess.run(loss_op)
-                print(str(datetime.now()) + " " + loss)
-                sys.stdout.flush()
-                """
 
                 num_iter = int(math.ceil(NUM_EXAMPLES / BATCH_SIZE))
                 error_sum = 0
@@ -112,6 +100,7 @@ def evaluate():
                 print('%s: Average Error = %.3f' % (datetime.now(), precision))
 
             except Exception as e:    # pylint: disable=broad-except
+                print(e)
                 coord.request_stop(e)
 
             coord.request_stop()
