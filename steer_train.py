@@ -19,8 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 from datetime import datetime
 import time
 import sys
@@ -29,8 +27,8 @@ import tensorflow as tf
 import steer
 #Batch size of 128
 
-STEPS_TO_TRAIN=10
-LOG_RATE=1
+STEPS_TO_TRAIN=100
+LOG_RATE=10
 TRAINING_DIR="tmp/steering_train"
 
 
@@ -88,8 +86,10 @@ def train():
         checkpoint_dir=TRAINING_DIR,
         hooks=[tf.train.StopAtStepHook(num_steps=STEPS_TO_TRAIN),
                tf.train.NanTensorHook(loss),
-               _LoggerHook()],
-        config=tf.ConfigProto(log_device_placement=False)) as mon_sess:
+               _LoggerHook(),
+               tf.train.CheckpointSaverHook("tmp/steering_train",save_steps=1)],
+        config=tf.ConfigProto(log_device_placement=False),
+        save_checkpoint_secs=60) as mon_sess:
       while not mon_sess.should_stop():
         mon_sess.run(train_op)
 
