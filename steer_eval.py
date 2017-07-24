@@ -35,6 +35,9 @@ import math
 import time
 import sys
 
+import os
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import numpy as np
 import tensorflow as tf
 import steer
@@ -43,6 +46,7 @@ import steer_input
 EVAL_DIR='tmp/steering_eval'
 CHECKPOINT_DIR='tmp/steering_train'
 NUM_EXAMPLES=steer_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
+BATCH_SIZE=128
 def evaluate():
     with tf.Graph().as_default():
 
@@ -77,33 +81,41 @@ def evaluate():
                 print('No checkpoint file found')
                 return
 
-
-        # Start the queue runners.
-        coord = tf.train.Coordinator()
-        try:
-            threads = []
-            for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
-                threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
-                                                                                 start=True))
-
-            num_iter = int(math.ceil(FLAGS.num_examples / FLAGS.batch_size))
-            true_count = 0    # Counts the number of correct predictions.
-            total_sample_count = num_iter * FLAGS.batch_size
-            step = 0
-            while not coord.should_stop():
-                predictions = sess.run([top_k_op])
-                true_count += np.sum(predictions)
-                step += 1
-
-            # Calculate loss.
+            """
+            tf.train.start_queue_runners(sess)
             print(str(datetime.now()) + " " + sess.run(loss_op))
             sys.stdout.flush()
+            """
+            # Start the queue runners.
+            coord = tf.train.Coordinator()
+            try:
+                threads = []
+                for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+                    threads.extend(qr.create_threads(sess, coord=coord, daemon=True,start=True))
 
-        except Exception as e:    # pylint: disable=broad-except
-            coord.request_stop(e)
+                """
+                # Calculate loss.
+                loss=sess.run(loss_op)
+                print(str(datetime.now()) + " " + loss)
+                sys.stdout.flush()
+                """
 
-        coord.request_stop()
-        coord.join(threads, stop_grace_period_secs=10)
+                num_iter = int(math.ceil(NUM_EXAMPLES / BATCH_SIZE))
+                error_sum = 0
+                total_sample_count = num_iter * BATCH_SIZE
+                step = 0
+                while step < num_iter and not coord.should_stop():
+                     predictions = sess.run([loss_op])
+                     error_sum += np.sum(predictions)
+                     step += 1
+                precision = error_sum / total_sample_count
+                print('%s: Average Error = %.3f' % (datetime.now(), precision))
+
+            except Exception as e:    # pylint: disable=broad-except
+                coord.request_stop(e)
+
+            coord.request_stop()
+            coord.join(threads, stop_grace_period_secs=10)
 
 def main(argv=None):  # pylint: disable=unused-argument
     if tf.gfile.Exists(EVAL_DIR):
