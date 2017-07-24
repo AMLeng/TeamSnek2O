@@ -42,7 +42,8 @@ def train():
     # GPU and resulting in a slow down.
     with tf.device('/cpu:0'):
       images, labels = steer.distorted_inputs()
-
+    print("Images read")
+    sys.stdout.flush()
     # Build a Graph that computes the logits predictions from the
     # inference model.
     logits = steer.inference(images)
@@ -66,6 +67,8 @@ def train():
         return tf.train.SessionRunArgs(loss)  # Asks for loss value.
 
       def after_run(self, run_context, run_values):
+        print(self._step)
+        sys.stdout.flush()
         if self._step % LOG_RATE == 0:
           current_time = time.time()
           duration = current_time - self._start_time
@@ -84,7 +87,7 @@ def train():
     print("Beginning Training")
     with tf.train.MonitoredTrainingSession(
         checkpoint_dir=TRAINING_DIR,
-        hooks=[tf.train.StopAtStepHook(num_steps=STEPS_TO_TRAIN),
+        hooks=[tf.train.StopAtStepHook(last_step=STEPS_TO_TRAIN),
                tf.train.NanTensorHook(loss),
                _LoggerHook()],
         config=tf.ConfigProto(log_device_placement=False)) as mon_sess:

@@ -29,8 +29,8 @@ import tensorflow as tf
 #TODO:
 #Allow for flipping image distortion (that is, modify the label accordingly). Similarly, fancier augmentations of the data also require altering the labels
 
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 15000
-NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 10000
+NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 150
+NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 150
 DATA_DIR="TimeStampedOriginal/centerImages/" #NOTE: Change this accordingly to match whether the data is for training or testing. Should probably modify to use python flags
 LOG_FILE="TimeStampedOriginal/approximatedStamps.txt"
 GLOBALHEIGHT=480
@@ -143,6 +143,7 @@ def distorted_inputs(data_dir, batch_size): #MUST SET HEIGHT AND WIDTH
   min_queue_examples = int(NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN *min_fraction_of_examples_in_queue)
   print ('Filling queue with %d images before starting to train. '
          'This will take a few minutes.' % min_queue_examples)
+  sys.stdout.flush()
 
   # Generate a batch of images and labels by building up a queue of examples.
   return _generate_image_and_label_batch(float_image, read_input.label,
