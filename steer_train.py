@@ -13,22 +13,20 @@
 # limitations under the License.
 # ==============================================================================
 
-##THIS FILE HAS BEEN MODIFIED FOR THE NWAP WORKSHOP
+# THIS FILE HAS BEEN MODIFIED FOR THE NWAP WORKSHOP
 # Modifications finished? (Except for renaming import)
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
-import os
-
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
 from datetime import datetime
 import time
 import sys
 import tensorflow as tf
 import steer
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 STEPS_TO_TRAIN = 10
 LOG_RATE = 1
@@ -43,7 +41,10 @@ def train():
         # Get images and labels
         # Force input pipeline to CPU:0 to avoid operations sometimes ending up on
         # GPU and resulting in a slow down.
-        images, labels = steer.distorted_inputs()
+        with tf.device('/cpu:0'):
+            images, labels = steer.distorted_inputs()
+        print("Images read")
+        sys.stdout.flush()
 
         # Build a Graph that computes the logits predictions from the
         # inference model.
@@ -74,6 +75,7 @@ def train():
                     self._start_time = current_time
 
                     loss_value = run_values.results
+
                     examples_per_sec = LOG_RATE * 128 / duration  # NOTE:Batch size defined here
                     sec_per_batch = float(duration / LOG_RATE)
 
@@ -86,6 +88,7 @@ def train():
         print("Beginning Training")
         with tf.train.MonitoredTrainingSession(
                 checkpoint_dir=TRAINING_DIR,
+
                 hooks=[tf.train.StopAtStepHook(num_steps=STEPS_TO_TRAIN),
                        tf.train.NanTensorHook(loss),
                        _LoggerHook()],
@@ -94,7 +97,8 @@ def train():
                 mon_sess.run(train_op)
 
 
-def main(argv=None):  # pylint: disable=unused-argument
+# TODO add args
+def main():  # pylint: disable=unused-argument
     if tf.gfile.Exists(TRAINING_DIR):
         tf.gfile.DeleteRecursively(TRAINING_DIR)
     tf.gfile.MakeDirs(TRAINING_DIR)

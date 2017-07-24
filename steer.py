@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#         http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,19 +30,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
-import re
-import sys
-import tarfile
-
-from six.moves import urllib
 import tensorflow as tf
-
 import steer_input
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # Basic model parameters.
 BATCH_SIZE = 128
 DATA_DIR = "TimeStampedOriginal/centerImages/"
+EVAL_DATA_DIR = "TimeStampedOriginal/centerImages/"
+
 # Global constants describing the data set.
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = steer_input.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
 NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = steer_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
@@ -56,12 +54,13 @@ INITIAL_LEARNING_RATE = 0.1  # Initial learning rate.
 
 def _variable_on_cpu(name, shape, initializer):
     """Helper to create a Variable stored on CPU memory.
+    We want variables pinned to the CPU so that they can be accessed if using multiple GPUs
     Args:
-      name: name of the variable
-      shape: list of ints
-      initializer: initializer for Variable
+        name: name of the variable
+        shape: list of ints
+        initializer: initializer for Variable
     Returns:
-      Variable Tensor
+        Variable Tensor
     """
     with tf.device('/cpu:0'):
         dtype = tf.float32
@@ -105,41 +104,34 @@ def distorted_inputs(data_dir=DATA_DIR, batch_size=BATCH_SIZE):
     return images, labels
 
 
-def inputs():
+def inputs(data_dir=EVAL_DATA_DIR, batch_size=BATCH_SIZE):
     """Construct input for evaluation using the Reader ops.
-    Args:
-      eval_data: bool, indicating if one should use the train or eval data set.
     Returns:
       images: Images. 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
       labels: Labels. 1D tensor of [batch_size] size.
     Raises:
       ValueError: If no data_dir
     """
-    images, labels = steer_input.inputs(data_dir=DATA_DIR,
-                                        batch_size=BATCH_SIZE)
+    images, labels = steer_input.inputs(data_dir, batch_size)
     return images, labels
 
 
 def inference(images):
+    """Build the steering model.
+    Args:
+        images: Images returned from distorted_inputs() or inputs().
+    Returns:
+        Network steering predictions
     """
-    Build a replica of Nvidia's CNN model.
-
-    :param images: Images returned from distorted_inputs() or inputs().
-    :return: Logits
-    """
-
-    # normalization
-    norm = tf.nn.lrn(images, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
-                     name='norm')
-    # no pooling
+    # We instantiate all variables using tf.get_variable() instead of
+    # tf.Variable() in order to share variables across multiple GPU training runs.
+    # If we only ran this model on a single GPU, we could simplify this function
+    # by replacing all instances of tf.get_variable() with tf.Variable().
 
     # conv1
     with tf.variable_scope('conv1') as scope:
-        kernel = _variable_with_weight_decay('weights',
-                                             shape=[5, 5, 3, 24],
-                                             stddev=5e-2,
-                                             wd=0.1)
-        conv = tf.nn.conv2d(norm, kernel, [1, 2, 2, 1], padding='SAME')
+        kernel = _variable_with_weight_decay('weights', shape=[5, 5, 3, 24], stddev=5e-2, wd=0.0)
+        conv = tf.nn.conv2d(images, kernel, [1, 2, 2, 1], padding="VALID")
         biases = _variable_on_cpu('biases', [24], tf.constant_initializer(0.0))
         pre_activation = tf.nn.bias_add(conv, biases)
         conv1 = tf.nn.relu(pre_activation, name=scope.name)
@@ -149,8 +141,8 @@ def inference(images):
         kernel = _variable_with_weight_decay('weights',
                                              shape=[5, 5, 24, 36],
                                              stddev=5e-2,
-                                             wd=0.1)
-        conv = tf.nn.conv2d(conv1, kernel, [1, 2, 2, 1], padding='SAME')
+                                             wd=0.0)
+        conv = tf.nn.conv2d(conv1, kernel, [1, 2, 2, 1], padding='VALID')
         biases = _variable_on_cpu('biases', [36], tf.constant_initializer(0.0))
         pre_activation = tf.nn.bias_add(conv, biases)
         conv2 = tf.nn.relu(pre_activation, name=scope.name)
@@ -160,8 +152,8 @@ def inference(images):
         kernel = _variable_with_weight_decay('weights',
                                              shape=[5, 5, 36, 48],
                                              stddev=5e-2,
-                                             wd=0.1)
-        conv = tf.nn.conv2d(conv2, kernel, [1, 2, 2, 1], padding='SAME')
+                                             wd=0.0)
+        conv = tf.nn.conv2d(conv2, kernel, [1, 2, 2, 1], padding='VALID')
         biases = _variable_on_cpu('biases', [48], tf.constant_initializer(0.0))
         pre_activation = tf.nn.bias_add(conv, biases)
         conv3 = tf.nn.relu(pre_activation, name=scope.name)
@@ -171,8 +163,8 @@ def inference(images):
         kernel = _variable_with_weight_decay('weights',
                                              shape=[3, 3, 48, 64],
                                              stddev=5e-2,
-                                             wd=0.1)
-        conv = tf.nn.conv2d(conv3, kernel, [1, 1, 1, 1], padding='SAME')
+                                             wd=0.0)
+        conv = tf.nn.conv2d(conv3, kernel, [1, 1, 1, 1], padding='VALID')
         biases = _variable_on_cpu('biases', [64], tf.constant_initializer(0.0))
         pre_activation = tf.nn.bias_add(conv, biases)
         conv4 = tf.nn.relu(pre_activation, name=scope.name)
@@ -182,8 +174,8 @@ def inference(images):
         kernel = _variable_with_weight_decay('weights',
                                              shape=[3, 3, 64, 64],
                                              stddev=5e-2,
-                                             wd=0.1)
-        conv = tf.nn.conv2d(conv4, kernel, [1, 1, 1, 1], padding='SAME')
+                                             wd=0.0)
+        conv = tf.nn.conv2d(conv4, kernel, [1, 1, 1, 1], padding='VALID')
         biases = _variable_on_cpu('biases', [64], tf.constant_initializer(0.0))
         pre_activation = tf.nn.bias_add(conv, biases)
         conv5 = tf.nn.relu(pre_activation, name=scope.name)
@@ -194,30 +186,28 @@ def inference(images):
         reshape = tf.reshape(conv5, [BATCH_SIZE, -1])
         dim = reshape.get_shape()[1].value
         weights = _variable_with_weight_decay('weights', shape=[dim, 100],
-                                              stddev=0.04, wd=0.004)
+                                              stddev=0.04, wd=0.0)
         biases = _variable_on_cpu('biases', [100], tf.constant_initializer(0.1))
         local1 = tf.nn.relu(tf.matmul(reshape, weights) + biases, name=scope.name)
 
     # local2
     with tf.variable_scope('local2') as scope:
         weights = _variable_with_weight_decay('weights', shape=[100, 50],
-                                              stddev=0.04, wd=0.004)
+                                              stddev=0.04, wd=0.0)
         biases = _variable_on_cpu('biases', [50], tf.constant_initializer(0.1))
         local2 = tf.nn.relu(tf.matmul(local1, weights) + biases, name=scope.name)
 
     # local3
     with tf.variable_scope('local3') as scope:
         weights = _variable_with_weight_decay('weights', shape=[50, 10],
-                                              stddev=0.04, wd=0.004)
+                                              stddev=0.04, wd=0.0)
         biases = _variable_on_cpu('biases', [10], tf.constant_initializer(0.1))
         local3 = tf.nn.relu(tf.matmul(local2, weights) + biases, name=scope.name)
 
-    # local4
+    # Predict
     with tf.variable_scope('local4') as scope:
-        weights = _variable_with_weight_decay('weights', shape=[10, 1],
-                                              stddev=0.04, wd=0.004)
-        biases = _variable_on_cpu('biases', [1], tf.constant_initializer(0.1))
-        local4 = tf.nn.relu(tf.matmul(local3, weights) + biases, name=scope.name)
+        weights = _variable_with_weight_decay('weights', shape=[10, 1], stddev=0.04, wd=0.0)
+        local4 = tf.matmul(local3, weights, name=scope.name)
 
     return local4
 

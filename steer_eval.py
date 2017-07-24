@@ -13,52 +13,97 @@
 # limitations under the License.
 # ==============================================================================
 
-##THIS FILE HAS BEEN MODIFIED FOR THE NWAP WORKSHOP
+# THIS FILE HAS BEEN MODIFIED FOR THE NWAP WORKSHOP
 # Modifications finished? (Except for renaming import)
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from datetime import datetime
+import sys
+import numpy as np
+import tensorflow as tf
+import steer
+import steer_input
+import math
 
 import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-from datetime import datetime
-import time
-import sys
-import tensorflow as tf
-import steer
-
-EVAL_DIR = "tmp/steering_eval"
+EVAL_DIR = 'tmp/steering_eval'
+CHECKPOINT_DIR = 'tmp/steering_train'
+NUM_EXAMPLES = steer_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
+BATCH_SIZE = 128
 
 
-def eval():
-    """Train for a number of steps."""
+def evaluate():
     with tf.Graph().as_default():
-        global_step = tf.contrib.framework.get_or_create_global_step()
 
         # Get images and labels
         # Force input pipeline to CPU:0 to avoid operations sometimes ending up on
         # GPU and resulting in a slow down.
-        with tf.device('/cpu:0'):
-            images, labels = steer.distorted_inputs(EVAL_DIR)
+        # with tf.device('/cpu:0'):
+        images, labels = steer.inputs()
 
         # Build a Graph that computes the logits predictions from the
         # inference model.
         logits = steer.inference(images)
+        loss_op = steer.loss(logits, labels)
 
-        # Calculate loss.
-        loss = steer.loss(logits, labels)
+        saver = tf.train.Saver()
+        print("Evaluating")
+        sys.stdout.flush()
+        with tf.Session() as sess:
+            ckpt = tf.train.get_checkpoint_state(CHECKPOINT_DIR)
+            if ckpt and ckpt.model_checkpoint_path:
+                # Restores from checkpoint
+                print("Restoring session " + ckpt.model_checkpoint_path)
+                sys.stdout.flush()
+                # Assuming model_checkpoint_path looks something like:
+                #   /my-favorite-path/cifar10_train/model.ckpt-0,
+                # extract global_step from it.
+                saver.restore(sess, ckpt.model_checkpoint_path)
+                global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+                print(global_step)
+                sys.stdout.flush()
+            else:
+                print('No checkpoint file found')
+                return
 
-        print(str(datetime.now()) + " " + tf.Session().run(loss))
+            # Start the queue runners.
+            coord = tf.train.Coordinator()
+            threads = []
+
+            try:
+                for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+                    threads.extend(qr.create_threads(sess, coord=coord, daemon=True, start=True))
+
+                num_iter = int(math.ceil(NUM_EXAMPLES / BATCH_SIZE))
+                error_sum = 0
+                total_sample_count = num_iter * BATCH_SIZE
+                step = 0
+                while step < num_iter and not coord.should_stop():
+                    predictions = sess.run([loss_op])
+                    error_sum += np.sum(predictions)
+                    step += 1
+                precision = error_sum / total_sample_count
+                print('%s: Average Error = %.3f' % (datetime.now(), precision))
+
+            except Exception as e:  # pylint: disable=broad-except
+                print(e)
+                coord.request_stop(e)
+
+            coord.request_stop()
+            coord.join(threads, stop_grace_period_secs=10)
 
 
-def main(argv=None):  # pylint: disable=unused-argument
+# TODO add args
+def main():  # pylint: disable=unused-argument
     if tf.gfile.Exists(EVAL_DIR):
         tf.gfile.DeleteRecursively(EVAL_DIR)
     tf.gfile.MakeDirs(EVAL_DIR)
-    eval()
+    evaluate()
 
 
 if __name__ == '__main__':

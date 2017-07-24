@@ -13,37 +13,38 @@
 # limitations under the License.
 # ==============================================================================
 
-##THIS FILE HAS BEEN MODIFIED FOR THE NWAP WORKSHOP
+# THIS FILE HAS BEEN MODIFIED FOR THE NWAP WORKSHOP
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
 import sys
 
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 # TODO:
-# Allow for flipping image distortion (that is, modify the label accordingly). Similarly, fancier augmentations of the data also require altering the labels
+# Allow for flipping image distortion (that is, modify the label accordingly). Similarly, fancier augmentations of the
+# data also require altering the labels
 
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 15000
-NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 10000
-DATA_DIR = "TimeStampedOriginal/centerImages/"  # NOTE: Change this accordingly to match whether the data is for training or testing. Should probably modify to use python flags
+
+NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 1500
+NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 1500
+DATA_DIR = "TimeStampedOriginal/centerImages/"  # NOTE: Change this accordingly to match whether the data is for
+# training or testing. Should probably modify to use python flags
 LOG_FILE = "TimeStampedOriginal/approximatedStamps.txt"
 GLOBALHEIGHT = 480
 GLOBALWIDTH = 640
 
 
-def get_names_and_labels():
+def get_names_and_labels(data_dir):
     labelfile = open(LOG_FILE, "r")
     line = labelfile.readline()
     files = []
     labels = []
-    while (len(line) > 0):
+    while len(line) > 0:
         totalstring = line.split(" ")
-        files.append(DATA_DIR + totalstring[0])
+        files.append(data_dir + totalstring[0])
         labels.append(float(totalstring[1]))
         line = labelfile.readline()
     return files, labels
@@ -75,6 +76,7 @@ def _generate_image_and_label_batch(image, label, min_queue_examples,
     Returns:
       images: Images. 4D tensor of [batch_size, height, width, 3] size.
       labels: Labels. 1D tensor of [batch_size] size.
+
     """
     # Create a queue that shuffles the examples, and then
     # read 'batch_size' images + labels from the example queue.
@@ -105,7 +107,7 @@ def distorted_inputs(data_dir, batch_size):  # MUST SET HEIGHT AND WIDTH
       labels: Labels. 1D tensor of [batch_size] size.
     """
 
-    filenamelist, labellist = get_names_and_labels()
+    filenamelist, labellist = get_names_and_labels(data_dir)
     images = tf.convert_to_tensor(filenamelist, dtype=tf.string)
     labels = tf.convert_to_tensor(labellist, dtype=tf.float32)
 
@@ -144,6 +146,7 @@ def distorted_inputs(data_dir, batch_size):  # MUST SET HEIGHT AND WIDTH
     min_queue_examples = int(NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN * min_fraction_of_examples_in_queue)
     print('Filling queue with %d images before starting to train. '
           'This will take a few minutes.' % min_queue_examples)
+    sys.stdout.flush()
 
     # Generate a batch of images and labels by building up a queue of examples.
     return _generate_image_and_label_batch(float_image, read_input.label,
@@ -161,7 +164,7 @@ def inputs(data_dir, batch_size):
       labels: Labels. 1D tensor of [batch_size] size.
     """
 
-    filenamelist, labellist = get_names_and_labels()
+    filenamelist, labellist = get_names_and_labels(data_dir)
     images = tf.convert_to_tensor(filenamelist, dtype=tf.string)
     labels = tf.convert_to_tensor(labellist, dtype=tf.float32)
 
@@ -175,15 +178,15 @@ def inputs(data_dir, batch_size):
 
     # Set the shapes of tensors.
     float_image.set_shape([GLOBALHEIGHT, GLOBALWIDTH, 3])
-    read_input.label.set_shape([1])
+
+    read_input.label.set_shape([])
 
     # Ensure that the random shuffling has good mixing properties.
     min_fraction_of_examples_in_queue = 0.4
     min_queue_examples = int(NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN * min_fraction_of_examples_in_queue)
-    print('Filling queue with %d images before starting to train. '
+    print('Filling queue with %d images before starting to eval. '
           'This will take a few minutes.' % min_queue_examples)
+    sys.stdout.flush()
 
     # Generate a batch of images and labels by building up a queue of examples.
-    return _generate_image_and_label_batch(float_image, read_input.label,
-                                           min_queue_examples, batch_size,
-                                           shuffle=True)
+    return _generate_image_and_label_batch(float_image, read_input.label, min_queue_examples, batch_size, shuffle=True)
