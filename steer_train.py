@@ -27,8 +27,8 @@ import tensorflow as tf
 import steer
 #Batch size of 128
 
-STEPS_TO_TRAIN=100
-LOG_RATE=10
+STEPS_TO_TRAIN=10
+LOG_RATE=1
 TRAINING_DIR="tmp/steering_train"
 
 
@@ -86,18 +86,15 @@ def train():
         checkpoint_dir=TRAINING_DIR,
         hooks=[tf.train.StopAtStepHook(num_steps=STEPS_TO_TRAIN),
                tf.train.NanTensorHook(loss),
-               _LoggerHook(),
-               tf.train.CheckpointSaverHook("tmp/steering_train",save_steps=1)],
-        config=tf.ConfigProto(log_device_placement=False),
-        save_checkpoint_secs=60) as mon_sess:
+               _LoggerHook()],
+        config=tf.ConfigProto(log_device_placement=False)) as mon_sess:
       while not mon_sess.should_stop():
         mon_sess.run(train_op)
 
 
 def main(argv=None):  # pylint: disable=unused-argument
-  if tf.gfile.Exists(TRAINING_DIR):
-    tf.gfile.DeleteRecursively(TRAINING_DIR)
-  tf.gfile.MakeDirs(TRAINING_DIR)
+  #if tf.gfile.Exists(TRAINING_DIR):
+    #tf.gfile.DeleteRecursively(TRAINING_DIR)
   train()
 
 
