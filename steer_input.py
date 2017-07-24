@@ -169,16 +169,16 @@ def inputs(data_dir, batch_size):
   reshaped_image = tf.cast(read_input.uint8image, tf.float32)
 
   # Subtract off the mean and divide by the variance of the pixels.
-  float_image = tf.image.per_image_standardization(distorted_image)
+  float_image = tf.image.per_image_standardization(reshaped_image)
 
   # Set the shapes of tensors.
   float_image.set_shape([GLOBALHEIGHT, GLOBALWIDTH, 3])
-  read_input.label.set_shape([1])
+  read_input.label.set_shape([])
 
   # Ensure that the random shuffling has good mixing properties.
   min_fraction_of_examples_in_queue = 0.4
   min_queue_examples = int(NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN *min_fraction_of_examples_in_queue)
-  print ('Filling queue with %d images before starting to train. '
+  print ('Filling queue with %d images before starting to eval. '
          'This will take a few minutes.' % min_queue_examples)
 
   # Generate a batch of images and labels by building up a queue of examples.
