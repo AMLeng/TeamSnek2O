@@ -29,9 +29,11 @@ import steer
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+
 STEPS_TO_TRAIN = 50
 LOG_RATE = 1
 TRAINING_DIR = "tmp/steering_train"
+
 
 def train():
     """Train for a number of steps."""
@@ -90,7 +92,7 @@ def train():
 
                 hooks=[tf.train.StopAtStepHook(num_steps=STEPS_TO_TRAIN),
                        tf.train.NanTensorHook(loss),
-                       tf.train.CheckpointSaverHook(checkpoint_dir=TRAINING_DIR,save_steps=10,saver=tf.train.Saver()),
+                       tf.train.CheckpointSaverHook(checkpoint_dir=TRAINING_DIR, save_steps=10, saver=tf.train.Saver()),
                        _LoggerHook()],
                 config=tf.ConfigProto(log_device_placement=False)) as mon_sess:
             while not mon_sess.should_stop():
