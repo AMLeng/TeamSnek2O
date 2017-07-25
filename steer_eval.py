@@ -98,7 +98,7 @@ def evaluate():
 
 
 # TODO add args
-def main():  # pylint: disable=unused-argument
+def main(args):  # pylint: disable=unused-argument
     if tf.gfile.Exists(EVAL_DIR):
         tf.gfile.DeleteRecursively(EVAL_DIR)
     tf.gfile.MakeDirs(EVAL_DIR)

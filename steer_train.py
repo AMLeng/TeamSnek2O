@@ -24,6 +24,7 @@ from datetime import datetime
 import time
 import sys
 import tensorflow as tf
+import steer
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -96,7 +97,7 @@ def train():
 
 
 # TODO add args
-def main():  # pylint: disable=unused-argument
+def main(args):  # pylint: disable=unused-argument
     if tf.gfile.Exists(TRAINING_DIR):
         tf.gfile.DeleteRecursively(TRAINING_DIR)
     tf.gfile.MakeDirs(TRAINING_DIR)
