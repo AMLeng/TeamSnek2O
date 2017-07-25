@@ -48,7 +48,8 @@ def evaluate():
         # Build a Graph that computes the logits predictions from the
         # inference model.
         logits = steer.inference(images)
-        loss_op = steer.loss(logits, labels)
+        #loss_op = tf.reduce_sum(tf.square(tf.subtract(logits, labels)))
+        loss_op=steer.loss(logits,labels)
 
         saver = tf.train.Saver()
         print("Evaluating")
@@ -80,14 +81,16 @@ def evaluate():
 
                 num_iter = int(math.ceil(NUM_EXAMPLES / BATCH_SIZE))
                 error_sum = 0
-                total_sample_count = num_iter * BATCH_SIZE
                 step = 0
                 while step < num_iter and not coord.should_stop():
                     predictions = sess.run([loss_op])
                     error_sum += np.sum(predictions)
                     step += 1
-                precision = error_sum / total_sample_count
+                    for x in predictions:
+                        print("Step "+str(step) +": "+str(x))
+                precision = error_sum / (num_iter)
                 print('%s: Average Error = %.3f' % (datetime.now(), precision))
+                sys.stdout.flush()
 
             except Exception as e:  # pylint: disable=broad-except
                 print(e)
