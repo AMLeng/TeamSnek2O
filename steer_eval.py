@@ -48,7 +48,7 @@ def evaluate():
         # Build a Graph that computes the logits predictions from the
         # inference model.
         logits = steer.inference(images)
-        loss_op = steer.loss(logits, labels)
+        loss_op = tf.square(tf.subtract(logits, labels))
 
         saver = tf.train.Saver()
         print("Evaluating")
