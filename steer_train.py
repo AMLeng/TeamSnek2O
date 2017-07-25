@@ -100,16 +100,21 @@ def train(path_to_save):
                 config=tf.ConfigProto(log_device_placement=False)) as mon_sess:
             # Restore from the save if applicable
             if path_to_save is not None:
-                print(path_to_save)
-                print("Restoring session " + path_to_save)
-                sys.stdout.flush()
-                # Assuming model_checkpoint_path looks something like:
-                #   /my-favorite-path/cifar10_train/model.ckpt-0,
-                # extract global_step from it.
-                saver.restore(mon_sess, path_to_save)
-                global_step = path_to_save('/')[-1].split('-')[-1]
-                print(global_step)
-                sys.stdout.flush()
+                ckpt = tf.train.get_checkpoint_state(path_to_save)
+                if ckpt and ckpt.model_checkpoint_path:
+                    # Restores from checkpoint
+                    print("Restoring session " + ckpt.model_checkpoint_path)
+                    sys.stdout.flush()
+                    # Assuming model_checkpoint_path looks something like:
+                    #   /my-favorite-path/cifar10_train/model.ckpt-0,
+                    # extract global_step from it.
+                    saver.restore(mon_sess, ckpt.model_checkpoint_path)
+                    global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+                    print(global_step)
+                    sys.stdout.flush()
+                else:
+                    print('No checkpoint file found')
+                    return
             while not mon_sess.should_stop():
                 mon_sess.run(train_op)
 
