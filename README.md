@@ -5,3 +5,19 @@
 ### A program for driving cars. Hopefully.
 
 This program is based on a modified version of the [Tensorflow CIFAR-10 CNN tutorial.](http://tensorflow.org/tutorials/deep_cnn/)
+
+
+## Instructions
+
+`steer_train.py` and `steer_eval.py` are the two main executables, with self-evident names to match. `steer_train.py` should work out of the box, while `steer_eval.py` requires a saved checkpoint (`.ckpt`) file to load in variable values (saved automatically by `steer_train.py`.)
+
+#### Useful constants
+- `steer_train.py`
+ - `STEPS_TO_TRAIN`: How many steps to go through before exiting automatically. 
+ - `LOG_RATE`: How often to save out variable values. Default 1.
+- `steer_input.py`
+ - `NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN`: Self evident. Set as high as possible without exceeding RAM.
+ - `NUM_EXAMPLES_PER_EPOCH_FOR_EVAL`: Self evident. Set as high as possible without exceeding RAM.
+ 
+#### Running
+`steer_train.py` can be passed an optional command-line argument with the flag `--save` to attempt to load from a previous checkpoint, with an optional path to specify the directory of the checkpoint.
