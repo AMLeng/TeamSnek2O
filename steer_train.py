@@ -23,19 +23,20 @@ from __future__ import print_function
 from datetime import datetime
 import time
 import sys
+import argparse
 import tensorflow as tf
 import steer
 
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 STEPS_TO_TRAIN = 50
 LOG_RATE = 1
 TRAINING_DIR = "tmp/steering_train"
 
 
-def train():
+def train(path_to_save):
     """Train for a number of steps."""
     with tf.Graph().as_default():
         global_step = tf.contrib.framework.get_or_create_global_step()
@@ -50,6 +51,8 @@ def train():
         # Build a Graph that computes the logits predictions from the
         # inference model.
         logits = steer.inference(images)
+
+        saver = tf.train.Saver()
 
         # Calculate loss.
         loss = steer.loss(logits, labels)
@@ -96,16 +99,42 @@ def train():
                        _LoggerHook()],
                 save_checkpoint_secs=None,
                 config=tf.ConfigProto(log_device_placement=False)) as mon_sess:
+            # Restore from the save if applicable
+            if path_to_save is not None:
+                ckpt = tf.train.get_checkpoint_state(path_to_save)
+                if ckpt and ckpt.model_checkpoint_path:
+                    # Restores from checkpoint
+                    print("Restoring session " + ckpt.model_checkpoint_path)
+                    sys.stdout.flush()
+                    # Assuming model_checkpoint_path looks something like:
+                    #   /my-favorite-path/cifar10_train/model.ckpt-0,
+                    # extract global_step from it.
+                    saver.restore(mon_sess, ckpt.model_checkpoint_path)
+                    global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+                    print(global_step)
+                    sys.stdout.flush()
+                else:
+                    print('No checkpoint file found')
+                    return
             while not mon_sess.should_stop():
                 mon_sess.run(train_op)
 
 
 # TODO add args
-def main(args):  # pylint: disable=unused-argument
-    if tf.gfile.Exists(TRAINING_DIR):
-        tf.gfile.DeleteRecursively(TRAINING_DIR)
-    tf.gfile.MakeDirs(TRAINING_DIR)
-    train()
+def main(*args):  # pylint: disable=unused-argument
+    parser = argparse.ArgumentParser(description="Various command line args")
+    parser.add_argument('--save', nargs='?', const=TRAINING_DIR, default=None, required=False,
+                        help="An optional directory containing .ckpt save files to restore.",
+                        metavar="/path/to/folder")
+    args = parser.parse_args()
+    save_path = args.save
+
+    if save_path is None:
+        print("Deleting old training sessions...")
+        # if tf.gfile.Exists(TRAINING_DIR):
+        #    tf.gfile.DeleteRecursively(TRAINING_DIR)
+        #tf.gfile.MakeDirs(TRAINING_DIR)
+    train(save_path)
 
 
 if __name__ == '__main__':
