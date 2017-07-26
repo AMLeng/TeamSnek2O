@@ -270,7 +270,7 @@ def train(total_loss, global_step):  # Simplify considerably to fit new architec
 
     # Compute gradients.
     with tf.control_dependencies([loss_averages_op]):
-        opt = tf.train.GradientDescentOptimizer(lr)
+        opt = tf.train.MomentumOptimizer(lr,0.1,use_nesterov=True)
         grads = opt.compute_gradients(total_loss)
 
     # Apply gradients.
