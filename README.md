@@ -13,11 +13,11 @@ This program is based on a modified version of the [TensorFlow CIFAR-10 CNN tuto
 
 #### Useful constants
 - `steer_train.py`
- - `STEPS_TO_TRAIN`: How many steps to go through before exiting automatically. 
- - `LOG_RATE`: How often to save out variable values. Default 1.
+  - `STEPS_TO_TRAIN`: How many steps to go through before exiting automatically. 
+  - `LOG_RATE`: How often to save out variable values. Default 1.
 - `steer_input.py`
- - `NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN`: Self evident. Set as high as possible without exceeding RAM.
- - `NUM_EXAMPLES_PER_EPOCH_FOR_EVAL`: Self evident. Set as high as possible without exceeding RAM.
+  - `NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN`: Self evident. Set as high as possible without exceeding RAM.
+  - `NUM_EXAMPLES_PER_EPOCH_FOR_EVAL`: Self evident. Set as high as possible without exceeding RAM.
  
 #### Running
 `steer_train.py` can be passed an optional command-line argument with the flag `--save` to attempt to load from a previous checkpoint, with an optional path to specify the directory of the checkpoint.
