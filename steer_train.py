@@ -92,8 +92,9 @@ def train():
 
                 hooks=[tf.train.StopAtStepHook(num_steps=STEPS_TO_TRAIN),
                        tf.train.NanTensorHook(loss),
-                       tf.train.CheckpointSaverHook(checkpoint_dir=TRAINING_DIR, save_steps=10, saver=tf.train.Saver()),
+                       tf.train.CheckpointSaverHook(checkpoint_dir=TRAINING_DIR, save_steps=10, saver=tf.train.Saver(max_to_keep=0)),
                        _LoggerHook()],
+                save_checkpoint_secs=None,
                 config=tf.ConfigProto(log_device_placement=False)) as mon_sess:
             while not mon_sess.should_stop():
                 mon_sess.run(train_op)
