@@ -193,7 +193,7 @@ def inference(images):
 
     # pool2
         pool2 = tf.nn.max_pool(norm4, ksize=[1, 2, 2, 1], strides=[1, 1, 1, 1],
-                               padding='VALID', name='pool1')
+                               padding='VALID', name='pool2')
 
     # local1
     with tf.variable_scope('local1') as scope:
