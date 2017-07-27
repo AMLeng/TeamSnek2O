@@ -33,8 +33,8 @@ NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 1500
 DATA_DIR = "TimeStampedOriginal/centerImages/"  # NOTE: Change this accordingly to match whether the data is for
 # training or testing. Should probably modify to use python flags
 LOG_FILE = "TimeStampedOriginal/approximatedStamps.txt"
-GLOBALHEIGHT = 480
-GLOBALWIDTH = 640
+GLOBALHEIGHT = 320
+GLOBALWIDTH = 240
 
 
 def get_names_and_labels(data_dir):
