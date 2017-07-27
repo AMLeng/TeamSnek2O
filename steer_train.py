@@ -31,8 +31,8 @@ import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-STEPS_TO_TRAIN = 50
-LOG_RATE = 1
+STEPS_TO_TRAIN = 50 #This is the STEPS to train, not epochs. The epochs is given by images per train epoch (see the steer_input file), divided by steps_to_train*128
+LOG_RATE = 1 #This is also in terms of steps, not epochs
 TRAINING_DIR = "tmp/steering_train"
 
 

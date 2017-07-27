@@ -28,7 +28,7 @@ import tensorflow as tf
 # data also require altering the labels
 
 
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 1500
+NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 15212 #15212 total images available
 NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 1500
 DATA_DIR = "TimeStampedOriginal/centerImages/"  # NOTE: Change this accordingly to match whether the data is for
 # training or testing. Should probably modify to use python flags
