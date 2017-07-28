@@ -99,7 +99,7 @@ def train(path_to_save):
                        tf.train.CheckpointSaverHook(checkpoint_dir=TRAINING_DIR, save_steps=NUM_STEPS_PER_EPOCH_FOR_TRAIN, saver=tf.train.Saver(max_to_keep=None)),
                        _LoggerHook()],
                 save_checkpoint_secs=None,
-                config=tf.ConfigProto(log_device_placement=False)) as mon_sess:
+                config=tf.ConfigProto(log_device_placement=True)) as mon_sess:
             # Restore from the save if applicable
             if path_to_save is not None:
                 ckpt = tf.train.get_checkpoint_state(path_to_save)
@@ -118,6 +118,7 @@ def train(path_to_save):
                     print('No checkpoint file found')
                     return
             while not mon_sess.should_stop():
+                sys.stdout.flush()
                 mon_sess.run(train_op)
 
 
