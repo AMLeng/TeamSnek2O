@@ -131,7 +131,7 @@ def main(*args):  # pylint: disable=unused-argument
     save_path = args.save
 
     if save_path is None:
-        print("Deleting old training sessions...")
+        print("Deleting old training sessions... (Not actually)")
         # if tf.gfile.Exists(TRAINING_DIR):
         #    tf.gfile.DeleteRecursively(TRAINING_DIR)
         #tf.gfile.MakeDirs(TRAINING_DIR)
