@@ -31,7 +31,7 @@ import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-NUM_STEPS_PER_EPOCH_FOR_TRAIN=(int) steer.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN/steer.BATCH_SIZE
+NUM_STEPS_PER_EPOCH_FOR_TRAIN=(int) (steer.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN/steer.BATCH_SIZE)
 STEPS_TO_TRAIN = 50 #This is the STEPS to train, not epochs. The epochs is given by images per train epoch (see the steer_input file), divided by steps_to_train*128
 LOG_RATE = NUM_STEPS_PER_EPOCH_FOR_TRAIN #This is also in terms of steps, not epochs. If set to num_steps_per_epoch_for_train, logs once an epoch
 TRAINING_DIR = "tmp/steering_train"
@@ -96,7 +96,9 @@ def train(path_to_save):
 
                 hooks=[tf.train.StopAtStepHook(num_steps=STEPS_TO_TRAIN),
                        tf.train.NanTensorHook(loss),
-                       tf.train.CheckpointSaverHook(checkpoint_dir=TRAINING_DIR, save_steps=NUM_STEPS_PER_EPOCH_FOR_TRAIN, saver=tf.train.Saver(max_to_keep=None)),
+                       tf.train.CheckpointSaverHook(checkpoint_dir=TRAINING_DIR, 
+                            save_steps=NUM_STEPS_PER_EPOCH_FOR_TRAIN, 
+                            saver=tf.train.Saver(max_to_keep=None)),
                        _LoggerHook()],
                 save_checkpoint_secs=None,
                 config=tf.ConfigProto(log_device_placement=True)) as mon_sess:
