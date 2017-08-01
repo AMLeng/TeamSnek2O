@@ -36,7 +36,7 @@ STEPS_TO_TRAIN = 50 #This is the STEPS to train, not epochs. The epochs is given
 LOG_RATE = NUM_STEPS_PER_EPOCH_FOR_TRAIN #This is also in terms of steps, not epochs. If set to num_steps_per_epoch_for_train, logs once an epoch
 TRAINING_DIR = "tmp/steering_train"
 GPU_NAME="GPU_"
-NUM_GPUS=16
+NUM_GPUS=1
 
 def tower_loss(scope, images, labels):
     """Calculate the total loss on a single tower running the CIFAR model.
@@ -80,9 +80,16 @@ def average_gradients(tower_grads):
         # Note that each grad_and_vars looks like the following:
         #     ((grad0_gpu0, var0_gpu0), ... , (grad0_gpuN, var0_gpuN))
         grads = []
-        for g, _ in grad_and_vars:
+        def replace_none_with_zero(l):
+            #Some gradients might be 0s, which returns none, so we have to fix that
+            #https://github.com/tensorflow/tensorflow/issues/783
+            return 0.0 if l==None else l
+        def replace_none_with_zero(l,x):
+            #Same as above, but allows the specification of a tensor shape---the same shape as x will be used
+            return tf.zeros_like(x) if l==None else l
+        for g, x in grad_and_vars:
             # Add 0 dimension to the gradients to represent the tower.
-            expanded_g = tf.expand_dims(g, 0)
+            expanded_g = tf.expand_dims(replace_none_with_zero(g,x), 0)
 
             # Append on a 'tower' dimension which we will average over below.
             grads.append(expanded_g)
@@ -159,12 +166,7 @@ def train(path_to_save):
         grads = average_gradients(tower_grads)
 
         # Apply the gradients to adjust the shared variables.
-        apply_gradient_op = opt.apply_gradients(grads, global_step=global_step)
-
-        variables_averages_op = variable_averages.apply(tf.trainable_variables())
-
-        # Group all updates to into a single train op.
-        train_op = tf.group(apply_gradient_op, variables_averages_op)
+        train_op = opt.apply_gradients(grads, global_step=global_step)
 
         # Create a saver.
         saver = tf.train.Saver(tf.global_variables())
