@@ -9,6 +9,15 @@ This program is based on a modified version of the [TensorFlow CIFAR-10 CNN tuto
 
 ## Instructions
 
+#### Dependencies
+**All**
+- [TensorFlow](https://www.tensorflow.org)
+
+**Eurotruck Simulator 2 hooks**
+- [OpenCV Python bindings](http://docs.opencv.org/3.2.0/d6/d00/tutorial_py_root.html)
+- [screeninfo](https://pypi.python.org/pypi/screeninfo)
+
+#### Executables
 `steer_train.py` and `steer_eval.py` are the two main executables, with self-evident names to match. `steer_train.py` should work out of the box, while `steer_eval.py` requires a saved checkpoint (`.ckpt`) file to load in variable values (saved automatically by `steer_train.py`.)
 
 #### Useful constants
