@@ -24,6 +24,7 @@ from datetime import datetime
 import time
 import sys
 import argparse
+import numpy as np
 import tensorflow as tf
 import steer
 
@@ -32,7 +33,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 NUM_STEPS_PER_EPOCH_FOR_TRAIN=(int) (steer.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN/steer.BATCH_SIZE)
-STEPS_TO_TRAIN = 50 #This is the STEPS to train, not epochs. The epochs is given by images per train epoch (see the steer_input file), divided by steps_to_train*128
+STEPS_TO_TRAIN = 120 #This is the STEPS to train, not epochs. The epochs is given by images per train epoch (see the steer_input file), divided by steps_to_train*128
 LOG_RATE = NUM_STEPS_PER_EPOCH_FOR_TRAIN #This is also in terms of steps, not epochs. If set to num_steps_per_epoch_for_train, logs once an epoch
 TRAINING_DIR = "tmp/steering_train"
 GPU_NAME="GPU_"
@@ -177,8 +178,8 @@ def train(path_to_save):
         sess = tf.Session(config=tf.ConfigProto(
                 allow_soft_placement=True,
                 log_device_placement=False))
-
-
+        init=tf.global_variables_initializer()
+        sess.run(init)
         print("Beginning Training")
         # Restore from the save if applicable
         if path_to_save is not None:
