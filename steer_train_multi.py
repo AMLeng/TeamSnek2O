@@ -107,7 +107,7 @@ def train(path_to_save):
             initializer=tf.constant_initializer(0), trainable=False)
 
         # Calculate the learning rate schedule.
-        num_batches_per_epoch = (NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN /
+        num_batches_per_epoch = (steer.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN /
                                  steer.BATCH_SIZE)
         decay_steps = int(num_batches_per_epoch * steer.NUM_EPOCHS_PER_DECAY)
 
@@ -131,11 +131,11 @@ def train(path_to_save):
 
 
         batch_queue = tf.contrib.slim.prefetch_queue.prefetch_queue(
-                    [images, labels], capacity=2 * FLAGS.num_gpus)
+                    [images, labels], capacity=2 * NUM_GPUS)
         # Calculate the gradients for each model tower.
         tower_grads = []
         with tf.variable_scope(tf.get_variable_scope()):
-            for i in xrange(NUM_GPUS):
+            for i in range(NUM_GPUS):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (GPU_NAME, i)) as scope:
                         # Dequeues one batch for the GPU
@@ -174,7 +174,7 @@ def train(path_to_save):
         # implementations.
         sess = tf.Session(config=tf.ConfigProto(
                 allow_soft_placement=True,
-                log_device_placement=FLAGS.log_device_placement))
+                log_device_placement=False))
 
 
         print("Beginning Training")
@@ -198,7 +198,7 @@ def train(path_to_save):
         # Start the queue runners.
         tf.train.start_queue_runners(sess=sess)
 
-        for step in xrange(FLAGS.max_steps):
+        for step in range(STEPS_TO_TRAIN):
             start_time = time.time()
             _, loss_value = sess.run([train_op, loss])
             duration = time.time() - start_time
@@ -206,9 +206,9 @@ def train(path_to_save):
             assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
 
             if step % LOG_RATE == 0:
-                num_examples_per_step = FLAGS.batch_size * FLAGS.num_gpus
+                num_examples_per_step = steer.BATCH_SIZE * NUM_GPUS
                 examples_per_sec = num_examples_per_step / duration
-                sec_per_batch = duration / FLAGS.num_gpus
+                sec_per_batch = duration / NUM_GPUS
 
                 format_str = ('%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
                                             'sec/batch)')
@@ -216,7 +216,7 @@ def train(path_to_save):
                                      examples_per_sec, sec_per_batch))
 
                 # Save the model checkpoint periodically.
-                checkpoint_path = os.path.join(FLAGS.train_dir, 'model.ckpt')
+                checkpoint_path = os.path.join(TRAINING_DIR, 'model.ckpt')
                 saver.save(sess, checkpoint_path, global_step=step)
 
 # TODO add args
