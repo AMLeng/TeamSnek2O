@@ -107,15 +107,15 @@ def train(path_to_save):
             initializer=tf.constant_initializer(0), trainable=False)
 
         # Calculate the learning rate schedule.
-        num_batches_per_epoch = (cifar10.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN /
-                                 FLAGS.batch_size)
-        decay_steps = int(num_batches_per_epoch * cifar10.NUM_EPOCHS_PER_DECAY)
+        num_batches_per_epoch = (NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN /
+                                 steer.BATCH_SIZE)
+        decay_steps = int(num_batches_per_epoch * steer.NUM_EPOCHS_PER_DECAY)
 
         # Decay the learning rate exponentially based on the number of steps.
-        lr = tf.train.exponential_decay(cifar10.INITIAL_LEARNING_RATE,
+        lr = tf.train.exponential_decay(steer.INITIAL_LEARNING_RATE,
                                         global_step,
                                         decay_steps,
-                                        cifar10.LEARNING_RATE_DECAY_FACTOR,
+                                        steer.LEARNING_RATE_DECAY_FACTOR,
                                         staircase=True)
 
         # Create an optimizer that performs gradient descent.
