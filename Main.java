@@ -28,7 +28,7 @@ public class Main{
 	*/
 	
 	// File representing the folder that you select using a FileChooser
-	static final File dir = new File("/home/blackjack/Documents/center/");
+	static final File dir = new File("/home/blackjack/Documents/center/"); //CHANGE THIS TO YOUR DIRECTORY LOCATION OF THE IMAGES
 	
 	
 	//To modify this program for a new text file, modify these variables
