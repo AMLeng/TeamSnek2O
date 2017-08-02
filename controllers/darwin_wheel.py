@@ -1,10 +1,6 @@
 import foohid
 import threading
 import struct
-import random
-import time
-
-import math
 
 
 class DarwinWheel(threading.Thread):
@@ -19,10 +15,7 @@ class DarwinWheel(threading.Thread):
         with DarwinWheel.lock:
             DarwinWheel.running = True
 
-        # try:
-        #    foohid.destroy("FooHID joypad")
-        # except:
-        #    pass
+        # Because random reasons
         joypad = (
             0x05, 0x01,
             0x09, 0x05,
@@ -55,11 +48,13 @@ class DarwinWheel(threading.Thread):
             DarwinWheel.running = False
             foohid.destroy("FooHID joypad")
 
+    # Don't think anything needs to happen here
     def run(self):
         pass
 
     def set_angle(self, angle):
         if DarwinWheel.running:
+            # Translate from -180-180 to 0-255
             step = int(angle/180 * 127.5 + 127.5)
             print(step)
             foohid.send("FooHID joypad", struct.pack('H4B', 0, step, 0, 0, 0))
