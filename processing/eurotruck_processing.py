@@ -5,7 +5,6 @@ import numpy as np
 import cv2
 import time
 import os
-from PIL import Image
 from mss import mss
 import shutil
 import platform

@@ -15,7 +15,18 @@ This program is based on a modified version of the [TensorFlow CIFAR-10 CNN tuto
 
 **Eurotruck Simulator 2 hooks**
 - [OpenCV Python bindings](http://docs.opencv.org/3.2.0/d6/d00/tutorial_py_root.html)
-- [screeninfo](https://pypi.python.org/pypi/screeninfo)
+- [Pygame](https://www.pygame.org/news)
+- [Numpy](https://github.com/numpy/numpy)
+- [MSS](https://pypi.python.org/pypi/mss/)
+- Linux
+  - [screeninfo](https://pypi.python.org/pypi/screeninfo)
+  - [python-uinput](https://github.com/tuomasjjrasanen/python-uinput)
+- macOS
+  - [PyObjC](https://pythonhosted.org/pyobjc/)
+  - [pyobjc-framework-GameController](https://pypi.python.org/pypi/pyobjc-framework-GameController/)
+- Windows
+  - [pywin32](https://sourceforge.net/projects/pywin32/)
+  - [vJoy](http://vjoystick.sourceforge.net/site/)
 
 #### Executables
 `steer_train.py` and `steer_eval.py` are the two main executables, with self-evident names to match. `steer_train.py` should work out of the box, while `steer_eval.py` requires a saved checkpoint (`.ckpt`) file to load in variable values (saved automatically by `steer_train.py`.)
