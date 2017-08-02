@@ -215,7 +215,9 @@ def loss(outputs, targets):
     """
     Calculate L2 loss
     """
-    return tf.reduce_mean(tf.square(tf.subtract(outputs, targets)))
+    final_loss = tf.reduce_mean(tf.square(tf.subtract(outputs, targets)))
+    tf.losses.add_loss(final_loss) #We use a custom loss function, so unless we add it, it won't be in the collection of losses
+    return final_loss
 
 def _add_loss_summaries(total_loss):
     """Add summaries for losses in model.
