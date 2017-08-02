@@ -206,6 +206,8 @@ class WritingThread(threading.Thread):
             WritingThread.running = True
 
     def stop(self):
+        with WritingThread.lock:
+            WritingThread.running = False
         self.log.close()
         self.recorder.stop()
 

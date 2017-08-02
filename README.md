@@ -18,13 +18,14 @@ This program is based on a modified version of the [TensorFlow CIFAR-10 CNN tuto
 - [Pygame](https://www.pygame.org/news)
 - [Numpy](https://github.com/numpy/numpy)
 - [MSS](https://pypi.python.org/pypi/mss/)
-- Linux
+- **Linux**
   - [screeninfo](https://pypi.python.org/pypi/screeninfo)
   - [python-uinput](https://github.com/tuomasjjrasanen/python-uinput)
-- macOS
-  - [PyObjC](https://pythonhosted.org/pyobjc/)
-  - [pyobjc-framework-GameController](https://pypi.python.org/pypi/pyobjc-framework-GameController/)
-- Windows
+- **macOS**
+  - [PyObjC/AppKit](https://pythonhosted.org/pyobjc/)
+  - [foohid](https://github.com/unbit/foohid-py)
+    - Make sure to install the latest version from GitHub, `pip3` doesn't contain the latest release 0.2.
+- **Windows**
   - [pywin32](https://sourceforge.net/projects/pywin32/)
   - [vJoy](http://vjoystick.sourceforge.net/site/)
 
@@ -41,3 +42,12 @@ This program is based on a modified version of the [TensorFlow CIFAR-10 CNN tuto
  
 #### Running
 `steer_train.py` can be passed an optional command-line argument with the flag `--save` to attempt to load from a previous checkpoint, with an optional path to specify the directory of the checkpoint.
+
+#### Troubleshooting
+
+- **macOS**
+  - `Symbol not found: _PyString_FromString` when trying to run ETS2
+    - foohid-py isn't updated to the latest version 0.2, and is probably getting 2.7 and 3.x confused. Install using `sudo pip3 install git+git://github.com/unbit/foohid-py.git
+ ` instead of `sudo pip3 install foodhid`
+  - `unable to open it_unbit_foohid service` when trying to run ETS2 
+    - Bug in foodhid. Run `sudo kextunload /Library/Extensions/foohid.kext;sudo rm -rf /System/Library/Extensions/foohid.kext` then reinstall foodhid. If you encounter any errors, try restarting. Kexts are fun like that.
