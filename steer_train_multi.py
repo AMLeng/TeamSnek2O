@@ -34,9 +34,9 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 NUM_STEPS_PER_EPOCH_FOR_TRAIN=(int) (steer.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN/steer.BATCH_SIZE)
 STEPS_TO_TRAIN = 120 #This is the STEPS to train, not epochs. The epochs is given by images per train epoch (see the steer_input file), divided by steps_to_train*128
-LOG_RATE = NUM_STEPS_PER_EPOCH_FOR_TRAIN #This is also in terms of steps, not epochs. If set to num_steps_per_epoch_for_train, logs once an epoch
+LOG_RATE = 1 #This is also in terms of steps, not epochs. If set to num_steps_per_epoch_for_train, logs once an epoch
 TRAINING_DIR = "tmp/steering_train"
-GPU_NAME="GPU_"
+GPU_NAME="GPU"
 NUM_GPUS=1
 
 def tower_loss(scope, images, labels):
@@ -55,7 +55,6 @@ def tower_loss(scope, images, labels):
     # Build the portion of the Graph calculating the losses. Note that we will
     # assemble the total_loss using a custom function below.
     final_loss = steer.loss(logits, labels)
-    tf.losses.add_loss(final_loss) #We use a custom loss function, so unless we add it, it won't be in the collection of losses
 
     # Assemble all of the losses for the current tower only.
     losses = tf.get_collection('losses', scope)
