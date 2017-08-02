@@ -34,7 +34,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 NUM_STEPS_PER_EPOCH_FOR_TRAIN=(int) (steer.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN/steer.BATCH_SIZE)
 STEPS_TO_TRAIN = 120 #This is the STEPS to train, not epochs. The epochs is given by images per train epoch (see the steer_input file), divided by steps_to_train*128
-LOG_RATE = 1 #This is also in terms of steps, not epochs. If set to num_steps_per_epoch_for_train, logs once an epoch
+LOG_RATE = NUM_STEPS_PER_EPOCH_FOR_TRAIN #This is also in terms of steps, not epochs. If set to num_steps_per_epoch_for_train, logs once an epoch
 TRAINING_DIR = "tmp/steering_train"
 GPU_NAME="GPU"
 NUM_GPUS=1
@@ -217,7 +217,7 @@ def train(path_to_save):
                 examples_per_sec = num_examples_per_step / duration
                 sec_per_batch = duration / NUM_GPUS
 
-                format_str = ('%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
+                format_str = ('%s: step %d, loss = %.5f (%.1f examples/sec; %.3f '
                                             'sec/batch)')
                 print (format_str % (datetime.now(), step, loss_value,
                                      examples_per_sec, sec_per_batch))
