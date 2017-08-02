@@ -54,7 +54,8 @@ def tower_loss(scope, images, labels):
 
     # Build the portion of the Graph calculating the losses. Note that we will
     # assemble the total_loss using a custom function below.
-    _ = steer.loss(logits, labels)
+    final_loss = steer.loss(logits, labels)
+    tf.losses.add_loss(final_loss) #We use a custom loss function, so unless we add it, it won't be in the collection of losses
 
     # Assemble all of the losses for the current tower only.
     losses = tf.get_collection('losses', scope)
@@ -110,6 +111,7 @@ def average_gradients(tower_grads):
 def train(path_to_save):
     """Train for a number of steps."""
     with tf.Graph().as_default():
+
         global_step = tf.get_variable(
             'global_step', [],
             initializer=tf.constant_initializer(0), trainable=False)
@@ -148,8 +150,8 @@ def train(path_to_save):
                     with tf.name_scope('%s_%d' % (GPU_NAME, i)) as scope:
                         # Dequeues one batch for the GPU
                         image_batch, label_batch = batch_queue.dequeue()
-                        # Calculate the loss for one tower of the CIFAR model. This function
-                        # constructs the entire CIFAR model but shares the variables across
+                        # Calculate the loss for one tower of the model. This function
+                        # constructs the entire model but shares the variables across
                         # all towers.
                         loss = tower_loss(scope, image_batch, label_batch)
 
@@ -167,10 +169,12 @@ def train(path_to_save):
         grads = average_gradients(tower_grads)
 
         # Apply the gradients to adjust the shared variables.
-        train_op = opt.apply_gradients(grads, global_step=global_step)
+        train_op = tf.group(opt.apply_gradients(grads, global_step=global_step))
 
         # Create a saver.
         saver = tf.train.Saver(tf.global_variables())
+
+        init=tf.global_variables_initializer()
 
         # Start running operations on the Graph. allow_soft_placement must be set to
         # True to build towers on GPU, as some of the ops do not have GPU
@@ -178,9 +182,10 @@ def train(path_to_save):
         sess = tf.Session(config=tf.ConfigProto(
                 allow_soft_placement=True,
                 log_device_placement=False))
-        init=tf.global_variables_initializer()
+
         sess.run(init)
         print("Beginning Training")
+
         # Restore from the save if applicable
         if path_to_save is not None:
             ckpt = tf.train.get_checkpoint_state(path_to_save)
@@ -217,6 +222,7 @@ def train(path_to_save):
                                             'sec/batch)')
                 print (format_str % (datetime.now(), step, loss_value,
                                      examples_per_sec, sec_per_batch))
+                sys.stdout.flush()
 
                 # Save the model checkpoint periodically.
                 checkpoint_path = os.path.join(TRAINING_DIR, 'model.ckpt')
