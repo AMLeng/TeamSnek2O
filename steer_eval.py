@@ -40,15 +40,13 @@ def evaluate():
     with tf.Graph().as_default():
 
         # Get images and labels
-        # Force input pipeline to CPU:0 to avoid operations sometimes ending up on
-        # GPU and resulting in a slow down.
-        # with tf.device('/cpu:0'):
+        # Force input pipeline to CPU:0
+        #   with tf.device('/cpu:0'):
         images, labels = steer.inputs()
 
-        # Build a Graph that computes the logits predictions from the
-        # inference model.
+        # Build a graph that computes the logits predictions from the inference model.
         logits = steer.inference(images)
-        #loss_op = tf.reduce_sum(tf.square(tf.subtract(logits, labels)))
+        # loss_op = tf.reduce_sum(tf.square(tf.subtract(logits, labels)))
         loss_op=steer.loss(logits,labels)
 
         saver = tf.train.Saver()
@@ -62,7 +60,7 @@ def evaluate():
                 sys.stdout.flush()
                 # Assuming model_checkpoint_path looks something like:
                 #   /my-favorite-path/cifar10_train/model.ckpt-0,
-                # extract global_step from it.
+                # extract global_step from model_checkpoint_path.
                 saver.restore(sess, ckpt.model_checkpoint_path)
                 global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
                 print(global_step)

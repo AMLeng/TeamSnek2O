@@ -38,8 +38,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # Basic model parameters.
 BATCH_SIZE = 128
-DATA_DIR = "TimeStampedOriginal/centerImages/"
-EVAL_DATA_DIR = "TimeStampedOriginal/centerImages/"
+DATA_DIR = "data/TimeStampedOriginal/centerImages/"
+EVAL_DATA_DIR = "data/TimeStampedOriginal/centerImages/"
 
 # Global constants describing the data set.
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = steer_input.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
@@ -47,9 +47,9 @@ NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = steer_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
 
 # Constants describing the training process.
 MOVING_AVERAGE_DECAY = 0.9999  # The decay to use for the moving average.
-NUM_EPOCHS_PER_DECAY = 350.0  # Epochs after which learning rate decays.
+NUM_EPOCHS_PER_DECAY = 100.0  # Epochs after which learning rate decays.
 LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
-INITIAL_LEARNING_RATE = 0.1  # Initial learning rate.
+INITIAL_LEARNING_RATE = 0.01  # Initial learning rate.
 
 
 def _variable_on_cpu(name, shape, initializer):
@@ -62,6 +62,7 @@ def _variable_on_cpu(name, shape, initializer):
     Returns:
         Variable Tensor
     """
+    # TODO assign to core based on load
     with tf.device('/cpu:0'):
         dtype = tf.float32
         var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype)
@@ -94,8 +95,8 @@ def _variable_with_weight_decay(name, shape, stddev, wd):
 def distorted_inputs(data_dir=DATA_DIR, batch_size=BATCH_SIZE):
     """Construct distorted input for training using the Reader ops.
     Returns:
-      images: Images. 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
-      labels: Labels. 1D tensor of [batch_size] size.
+      images: 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
+      labels: 1D tensor of [batch_size] size.
     Raises:
       ValueError: If no data_dir
     """
@@ -215,7 +216,9 @@ def loss(outputs, targets):
     """
     Calculate L2 loss
     """
-    return tf.reduce_mean(tf.square(tf.subtract(outputs, targets)))
+    final_loss = tf.reduce_mean(tf.square(tf.subtract(outputs, targets)))
+    tf.losses.add_loss(final_loss) # We use a custom loss function – unless we add it, it won't be in collection of losses
+    return final_loss
 
 def _add_loss_summaries(total_loss):
     """Add summaries for losses in model.
@@ -234,8 +237,7 @@ def _add_loss_summaries(total_loss):
     # Attach a scalar summary to all individual losses and the total loss; do the
     # same for the averaged version of the losses.
     for l in losses + [total_loss]:
-        # Name each loss as '(raw)' and name the moving average version of the loss
-        # as the original loss name.
+        # Name each loss as '(raw)' and name the moving average version of the loss as the original loss name.
         tf.summary.scalar(l.op.name + ' (raw)', l)
         tf.summary.scalar(l.op.name, loss_averages.average(l))
 
@@ -243,13 +245,11 @@ def _add_loss_summaries(total_loss):
 
 
 def train(total_loss, global_step):  # Simplify considerably to fit new architecture
-    """Train model.
-    Create an optimizer and apply to all trainable variables. Add moving
-    average for all trainable variables.
+    """Train model:
+    Create an optimizer and apply to all trainable variables. Add moving average for all trainable variables.
     Args:
       total_loss: Total loss from loss().
-      global_step: Integer Variable counting the number of training steps
-        processed.
+      global_step: Integer Variable counting the number of training steps processed.
     Returns:
       train_op: op for training.
     """
@@ -270,7 +270,7 @@ def train(total_loss, global_step):  # Simplify considerably to fit new architec
 
     # Compute gradients.
     with tf.control_dependencies([loss_averages_op]):
-        opt = tf.train.GradientDescentOptimizer(lr)
+        opt = tf.train.MomentumOptimizer(lr,0.1,use_nesterov=True)
         grads = opt.compute_gradients(total_loss)
 
     # Apply gradients.
