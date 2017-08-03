@@ -38,8 +38,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # Basic model parameters.
 BATCH_SIZE = 128
-DATA_DIR = "TimeStampedOriginal/centerImages/"
-EVAL_DATA_DIR = "TimeStampedOriginal/centerImages/"
+DATA_DIR = "data/TimeStampedOriginal/centerImages/"
+EVAL_DATA_DIR = "data/TimeStampedOriginal/centerImages/"
 
 # Global constants describing the data set.
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = steer_input.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
@@ -62,6 +62,7 @@ def _variable_on_cpu(name, shape, initializer):
     Returns:
         Variable Tensor
     """
+    # TODO assign to core based on load
     with tf.device('/cpu:0'):
         dtype = tf.float32
         var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype)
