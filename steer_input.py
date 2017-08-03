@@ -30,24 +30,33 @@ import tensorflow as tf
 
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 15212 #15212 total images available
 NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 1500
-DATA_DIR = "TimeStampedOriginal/centerImages/"  # NOTE: Change this accordingly to match whether the data is for
+DATA_DIRS = ["TimeStampedOriginal/centerImages/"]  # NOTE: Change this accordingly to match whether the data is for
 # training or testing. Should probably modify to use python flags
-LOG_FILE = "TimeStampedOriginal/approximatedStamps.txt"
+LOG_FILES = ["TimeStampedOriginal/approximatedStamps.txt"]
 GLOBALHEIGHT = 480
 GLOBALWIDTH = 640
 
 
-def get_names_and_labels(data_dir):
-    labelfile = open(LOG_FILE, "r")
-    line = labelfile.readline()
-    files = []
-    labels = []
-    while len(line) > 0:
-        totalstring = line.split(" ")
-        files.append(data_dir + totalstring[0])
-        labels.append(float(totalstring[1]))
+def get_names_and_labels(data_dirs):
+    allfiles = []
+    alllabels = []
+    i = 0
+    while i<len(data_dirs):
+        data_dir = data_dirs[i]
+        log_file = LOG_FILES[i]
+        labelfile = open(log_file, "r")
         line = labelfile.readline()
-    return files, labels
+        files = []
+        labels = []
+        while len(line) > 0:
+            totalstring = line.split(" ")
+            files.append(data_dir + totalstring[0])
+            labels.append(float(totalstring[1]))
+            line = labelfile.readline()
+        allfiles = allfiles + files
+        alllabels = alllabels + labels
+        i+=1
+    return allfiles, alllabels
 
 def read_image(filename_queue):
     class ImageRecord(object):
@@ -95,7 +104,7 @@ def _generate_image_and_label_batch(image, label, min_queue_examples,
     return images, tf.reshape(label_batch, [batch_size])
 
 
-def distorted_inputs(data_dir, batch_size):  # MUST SET HEIGHT AND WIDTH
+def distorted_inputs(data_dirs, batch_size):  # MUST SET HEIGHT AND WIDTH
     """Construct distorted input for training using the Reader ops.
     Args:
       data_dir: Path to the data directory.
@@ -105,7 +114,7 @@ def distorted_inputs(data_dir, batch_size):  # MUST SET HEIGHT AND WIDTH
       labels: Labels. 1D tensor of [batch_size] size.
     """
 
-    filenamelist, labellist = get_names_and_labels(data_dir)
+    filenamelist, labellist = get_names_and_labels(data_dirs)
     images = tf.convert_to_tensor(filenamelist, dtype=tf.string)
     labels = tf.convert_to_tensor(labellist, dtype=tf.float32)
 
