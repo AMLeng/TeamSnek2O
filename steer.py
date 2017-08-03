@@ -95,8 +95,8 @@ def _variable_with_weight_decay(name, shape, stddev, wd):
 def distorted_inputs(data_dir=DATA_DIR, batch_size=BATCH_SIZE):
     """Construct distorted input for training using the Reader ops.
     Returns:
-      images: Images. 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
-      labels: Labels. 1D tensor of [batch_size] size.
+      images: 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
+      labels: 1D tensor of [batch_size] size.
     Raises:
       ValueError: If no data_dir
     """
@@ -217,7 +217,7 @@ def loss(outputs, targets):
     Calculate L2 loss
     """
     final_loss = tf.reduce_mean(tf.square(tf.subtract(outputs, targets)))
-    tf.losses.add_loss(final_loss) #We use a custom loss function, so unless we add it, it won't be in the collection of losses
+    tf.losses.add_loss(final_loss) # We use a custom loss function – unless we add it, it won't be in collection of losses
     return final_loss
 
 def _add_loss_summaries(total_loss):
@@ -237,8 +237,7 @@ def _add_loss_summaries(total_loss):
     # Attach a scalar summary to all individual losses and the total loss; do the
     # same for the averaged version of the losses.
     for l in losses + [total_loss]:
-        # Name each loss as '(raw)' and name the moving average version of the loss
-        # as the original loss name.
+        # Name each loss as '(raw)' and name the moving average version of the loss as the original loss name.
         tf.summary.scalar(l.op.name + ' (raw)', l)
         tf.summary.scalar(l.op.name, loss_averages.average(l))
 
@@ -246,13 +245,11 @@ def _add_loss_summaries(total_loss):
 
 
 def train(total_loss, global_step):  # Simplify considerably to fit new architecture
-    """Train model.
-    Create an optimizer and apply to all trainable variables. Add moving
-    average for all trainable variables.
+    """Train model:
+    Create an optimizer and apply to all trainable variables. Add moving average for all trainable variables.
     Args:
       total_loss: Total loss from loss().
-      global_step: Integer Variable counting the number of training steps
-        processed.
+      global_step: Integer Variable counting the number of training steps processed.
     Returns:
       train_op: op for training.
     """

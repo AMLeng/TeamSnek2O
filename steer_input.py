@@ -73,11 +73,10 @@ def _generate_image_and_label_batch(image, label, min_queue_examples,
       batch_size: Number of images per batch.
       shuffle: boolean indicating whether to use a shuffling queue.
     Returns:
-      images: Images. 4D tensor of [batch_size, height, width, 3] size.
-      labels: Labels. 1D tensor of [batch_size] size.
+      images: 4D tensor of [batch_size, height, width, 3] size.
+      labels: 1D tensor of [batch_size] size.
     """
-    # Create a queue that shuffles the examples, and then
-    # read 'batch_size' images + labels from the example queue.
+    # Create a queue that shuffles the examples, then read 'batch_size' images + labels from the example queue.
     if shuffle:
         images, label_batch = tf.train.shuffle_batch(
             [image, label],
@@ -101,8 +100,8 @@ def distorted_inputs(data_dir, batch_size):  # MUST SET HEIGHT AND WIDTH
       data_dir: Path to the data directory.
       batch_size: Number of images per batch.
     Returns:
-      images: Images. 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
-      labels: Labels. 1D tensor of [batch_size] size.
+      images: 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
+      labels: 1D tensor of [batch_size] size.
     """
 
     filenamelist, labellist = get_names_and_labels(data_dir)
@@ -114,17 +113,16 @@ def distorted_inputs(data_dir, batch_size):  # MUST SET HEIGHT AND WIDTH
 
     reshaped_image = tf.cast(read_input.uint8image, tf.float32)
 
-    # Image processing for training the network. Note the many random
-    # distortions applied to the image.
+    # Image processing for training the network. Random distortions applied to the image.
 
-    # Randomly flip the image horizontally.
-    # distorted_image = tf.image.random_flip_left_right(reshaped)
-    # Cannot do this so easily because we must change the label accordingly. Needs additional work
+    # Randomly flip the image horizontally:
+    #   distorted_image = tf.image.random_flip_left_right(reshaped)
+    # Cannot do this easily because we must change the label accordingly. Needs additional work
+
     print("Distorting images")
     sys.stdout.flush()
 
-    # Because these operations are not commutative, consider randomizing
-    # the order their operation.
+    # Because these operations are not commutative, consider randomizing order of their operation.
     # NOTE: since per_image_standardization zeros the mean and makes
     # the stddev unit, this likely has no effect see tensorflow#1458.
     distorted_image = tf.image.random_brightness(reshaped_image,
@@ -132,7 +130,7 @@ def distorted_inputs(data_dir, batch_size):  # MUST SET HEIGHT AND WIDTH
     distorted_image = tf.image.random_contrast(distorted_image,
                                                lower=0.2, upper=1.8)
 
-    # Subtract off the mean and divide by the variance of the pixels.
+    # Subtract the mean and divide by the variance of the pixels.
     float_image = tf.image.per_image_standardization(distorted_image)
 
     # Set the shapes of tensors.
@@ -157,8 +155,8 @@ def inputs(data_dir, batch_size):
       data_dir: Path to the data directory.
       batch_size: Number of images per batch.
     Returns:
-      images: Images. 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
-      labels: Labels. 1D tensor of [batch_size] size.
+      images: 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
+      labels: 1D tensor of [batch_size] size.
     """
 
     filenamelist, labellist = get_names_and_labels(data_dir)
@@ -170,14 +168,14 @@ def inputs(data_dir, batch_size):
 
     reshaped_image = tf.cast(read_input.uint8image, tf.float32)
 
-    # Subtract off the mean and divide by the variance of the pixels.
+    # Subtract the mean and divide by the variance of the pixels.
     float_image = tf.image.per_image_standardization(reshaped_image)
 
     # Set the shapes of tensors.
     float_image.set_shape([GLOBALHEIGHT, GLOBALWIDTH, 3])
     read_input.label.set_shape([])
 
-    # Ensure that the random shuffling has good mixing properties.
+    # Ensure that random shuffling has good mixing properties.
     min_fraction_of_examples_in_queue = 0.4
     min_queue_examples = int(NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN * min_fraction_of_examples_in_queue)
     print('Filling queue with %d images before starting to eval. '
