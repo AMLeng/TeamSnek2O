@@ -43,7 +43,7 @@ def train(path_to_save):
         global_step = tf.contrib.framework.get_or_create_global_step()
 
         # Get images and labels
-        # Force input pipeline to CPU:0
+        # Force input pipeline to CPU:0 to avoid operations sometimes ending up on GPU and resulting in a slow down.
         # TODO assign to core based on load
         with tf.device('/cpu:0'):
             images, labels = steer.distorted_inputs()
