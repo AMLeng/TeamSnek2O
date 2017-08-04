@@ -23,14 +23,17 @@ STEERING_AXIS = 0
 SCREEN = 0
 
 # Write frequency in ms
-WRITE_FREQUENCY = 50
+WRITE_FREQUENCY = 150
 
-IMAGE_FRONT_BORDER_LEFT = 240
-IMAGE_FRONT_BORDER_RIGHT = 2640
-IMAGE_FRONT_BORDER_TOP = 0
-IMAGE_FRONT_BORDER_BOTTOM = 1800
+# For 3360x2100 screen
+IMAGE_FRONT_BORDER_LEFT = 108
+IMAGE_FRONT_BORDER_RIGHT = 3258
+IMAGE_FRONT_BORDER_TOP = 400
+IMAGE_FRONT_BORDER_BOTTOM = 2070
 
 SAVE_HEIGHT = 480
+
+DEBUG = False
 
 
 class RecordingThread(threading.Thread):
@@ -97,13 +100,14 @@ class RecordingThread(threading.Thread):
                 frame = image
                 '''
 
-                frame_raw = ImageGrab.grab()
+                frame_raw = ImageGrab.grab(bbox=(IMAGE_FRONT_BORDER_LEFT, IMAGE_FRONT_BORDER_TOP, IMAGE_FRONT_BORDER_RIGHT, IMAGE_FRONT_BORDER_BOTTOM))
                 frame = np.uint8(frame_raw)
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                main = frame
 
                 # frame = Image.frombytes('RGB', (IMAGE_FRONT_BORDER_TOP, IMAGE_FRONT_BORDER_LEFT), image)
-                main = frame[IMAGE_FRONT_BORDER_TOP:IMAGE_FRONT_BORDER_BOTTOM,
-                       IMAGE_FRONT_BORDER_LEFT:IMAGE_FRONT_BORDER_RIGHT]
+                # main = frame[IMAGE_FRONT_BORDER_TOP:IMAGE_FRONT_BORDER_BOTTOM,
+                #       IMAGE_FRONT_BORDER_LEFT:IMAGE_FRONT_BORDER_RIGHT]
 
                 # gray = cv2.cvtColor(main, cv2.COLOR_BGR2GRAY)
                 # blur_gray = cv2.GaussianBlur(gray, (3, 3), 0)
@@ -117,7 +121,8 @@ class RecordingThread(threading.Thread):
                 # cv2.imshow('cap', dilated)
                 # cv2.imshow('resized', resized)
 
-                print(pygame.event.get())
+                if DEBUG:
+                    print(pygame.event.get())
                 axis = self.joystick.get_axis(STEERING_AXIS) * 180  # -180 to 180 "degrees"
 
                 # Save frame every 150ms
@@ -173,7 +178,8 @@ class WritingThread(threading.Thread):
             frame, timestamp, axis = self.recorder.get_frame()
             name = 'data/' + str(timestamp) + '.jpg'
             cv2.imwrite(self.OUT_FOLDER + name, frame)
-            print('Wrote ' + self.OUT_FOLDER + name)
+            if DEBUG:
+                print('Wrote ' + self.OUT_FOLDER + name)
             self.log.write(name + ' ' + str(axis) + '\n')
             self.log.flush()
 
