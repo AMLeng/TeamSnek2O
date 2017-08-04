@@ -5,7 +5,9 @@ import numpy as np
 import cv2
 import time
 import os
-from mss import mss
+# Deprecated because memory leak
+# from mss import mss
+from PIL import ImageGrab
 import shutil
 import platform
 
@@ -21,7 +23,7 @@ STEERING_AXIS = 0
 SCREEN = 0
 
 # Write frequency in ms
-WRITE_FREQUENCY = 150
+WRITE_FREQUENCY = 50
 
 IMAGE_FRONT_BORDER_LEFT = 240
 IMAGE_FRONT_BORDER_RIGHT = 2640
@@ -79,94 +81,47 @@ class RecordingThread(threading.Thread):
             RecordingThread.running = False
 
     def run(self):
-        recording = True
 
-        last_record = 0
+        timestamp = 0
 
         while RecordingThread.running:
-            pygame.event.pump()
-            '''
-            recording_button_act = self.joystick.get_button(AUTOPILOT)
-            if recording_button_act != recording_button_prev and recording_button_act == 1:
-                recording = not recording
+            if self.current_milli_time() - timestamp > WRITE_FREQUENCY:
+                pygame.event.pump()
+                # Capture the whole game
 
-                if recording:  # started recording
-                    sequence_id = d.add_sequence(country=COUNTRY_DEFAULT)
-                else:  # stopped recording
-                    self.fill_sequence_list()
+                '''
+                sct = mss()
+                width, height = self.get_screen_bbox()
+                image_raw = sct.grab({'top': 0, 'left': 0, 'width': width, 'height': height})
+                image = np.array(image_raw)
+                frame = image
+                '''
 
-            recording_button_prev = recording_button_act
+                frame_raw = ImageGrab.grab()
+                frame = np.uint8(frame_raw)
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            indicator_left_act = self.joystick.get_button(LEFT_INDICATOR)
-            if indicator_left_act != indicator_left_prev and indicator_left_act == 1:
-                indicator_left = not indicator_left
+                # frame = Image.frombytes('RGB', (IMAGE_FRONT_BORDER_TOP, IMAGE_FRONT_BORDER_LEFT), image)
+                main = frame[IMAGE_FRONT_BORDER_TOP:IMAGE_FRONT_BORDER_BOTTOM,
+                       IMAGE_FRONT_BORDER_LEFT:IMAGE_FRONT_BORDER_RIGHT]
 
-                # Switch indicator
-                if indicator_left and indicator_right:
-                    indicator_right = False
-            indicator_left_prev = indicator_left_act
+                # gray = cv2.cvtColor(main, cv2.COLOR_BGR2GRAY)
+                # blur_gray = cv2.GaussianBlur(gray, (3, 3), 0)
+                # edges = cv2.Canny(blur_gray, 50, 150)
+                # dilated = cv2.dilate(edges, (3,3), iterations=2)
 
-            indicator_right_act = self.joystick.get_button(RIGHT_INDICATOR)
-            if indicator_right_act != indicator_right_prev and indicator_right_act == 1:
-                indicator_right = not indicator_right
+                # Resize image to save some space (height = 100px)
+                ratio = main.shape[1] / main.shape[0]
+                resized = cv2.resize(main, (round(ratio * SAVE_HEIGHT), SAVE_HEIGHT))
 
-                # Switch indicator
-                if indicator_right and indicator_left:
-                    indicator_left = False
-            indicator_right_prev = indicator_right_act
+                # cv2.imshow('cap', dilated)
+                # cv2.imshow('resized', resized)
 
-            if indicator_left:
-                maneuver = 1
-            elif indicator_right:
-                maneuver = 2
-            else:
-                maneuver = 0
-            '''
-            if recording:
-                print("Recording: active")
-            else:
-                print("Recording: inactive")
+                print(pygame.event.get())
+                axis = self.joystick.get_axis(STEERING_AXIS) * 180  # -180 to 180 "degrees"
 
-            # Capture the whole game
-            '''
-            frame_raw = ImageGrab.grab(bbox=self.get_screen_bbox())
-            print(self.get_screen_bbox())
-            frame_raw.convert('RGB')
-            frame_raw = np.array(frame_raw)
-            print(frame_raw)
-            print(type(frame_raw))
-
-            # frame = np.uint8(frame_raw)
-            # frame = cv2.cvtColor(frame_raw, cv2.COLOR_BGR2RGB)
-            frame = frame_raw.astype(np.uint8)
-            '''
-            sct = mss()
-            width, height = self.get_screen_bbox()
-            image_raw = sct.grab({'top': 0, 'left': 0, 'width': width, 'height': height})
-            image = np.array(image_raw)
-            frame = image
-            # frame = Image.frombytes('RGB', (IMAGE_FRONT_BORDER_TOP, IMAGE_FRONT_BORDER_LEFT), image)
-            main = frame[IMAGE_FRONT_BORDER_TOP:IMAGE_FRONT_BORDER_BOTTOM,
-                   IMAGE_FRONT_BORDER_LEFT:IMAGE_FRONT_BORDER_RIGHT]
-
-            # gray = cv2.cvtColor(main, cv2.COLOR_BGR2GRAY)
-            # blur_gray = cv2.GaussianBlur(gray, (3, 3), 0)
-            # edges = cv2.Canny(blur_gray, 50, 150)
-            # dilated = cv2.dilate(edges, (3,3), iterations=2)
-
-            # Resize image to save some space (height = 100px)
-            ratio = main.shape[1] / main.shape[0]
-            resized = cv2.resize(main, (round(ratio * SAVE_HEIGHT), SAVE_HEIGHT))
-
-            # cv2.imshow('cap', dilated)
-            # cv2.imshow('resized', resized)
-
-            print(pygame.event.get())
-            axis = self.joystick.get_axis(STEERING_AXIS) * 180  # -180 to 180 "degrees"
-
-            # Save frame every 150ms
-            timestamp = self.current_milli_time()
-            if recording and (timestamp - last_record) >= WRITE_FREQUENCY:
+                # Save frame every 150ms
+                timestamp = self.current_milli_time()
                 self.image_queue.put((resized, timestamp, axis))
 
     def get_frame(self):
