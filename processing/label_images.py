@@ -3,12 +3,13 @@ import os
 import re
 import math
 
-image_dir='C:/Users/Alec/Desktop/Misc/NWAPWorkshop/steering/data/TimeStampedOriginal/centerImages'
-log_file='C:/Users/Alec/Desktop/Misc/NWAPWorkshop/steering/data/TimeStampedOriginal/steeringreport.txt'
-save_file='C:/Users/Alec/Desktop/Misc/NWAPWorkshop/steering/data/TimeStampedOriginal/approximatedstamps.txt'
+bag_num = '6'
+image_dir ='F:/AllData/extradata/bag' + bag_num + '/center'
+log_file = 'F:/AllData/extradata/bag' + bag_num + 'steering.txt'
+save_file ='bag' + bag_num + 'approximated.txt'
 
-filename_list=os.listdir(image_dir)
-file_stamp_list=[]
+filename_list = os.listdir(image_dir)
+file_stamp_list = []
 #Filter files to have images only
 for possible_file in filename_list:
     if possible_file[-4:] == '.jpg':
@@ -33,16 +34,16 @@ while line != '':
     for i in range(12):
         log.readline()
     line = log.readline()
-save=open(save_file,'w')
+save = open(save_file,'w')
 
 for file_stamp in file_stamp_list: #Now get the closest steering angle for each filestamp
-    i=0
-    min_i=0
-    min_diff=math.fabs(((float) (file_stamp))-stamps[min_i])
-    while(i<len(stamps)):
-        diff = math.fabs(((float) (file_stamp))-stamps[i])
+    i = 0
+    min_i = 0
+    min_diff=math.fabs(((float) (file_stamp)) - stamps[min_i])
+    while i<len(stamps):
+        diff = math.fabs(((float) (file_stamp)) - stamps[i])
         if diff<min_diff:
             min_i = i
             min_diff = diff
-        i+=1
+        i += 1
     save.write((file_stamp) + '.jpg ' + str(angles[min_i]) + '\n')
