@@ -30,9 +30,9 @@ import tensorflow as tf
 
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 15212 #15212 total images available
 NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 1500
-DATA_DIRS = ["TimeStampedOriginal/centerImages/"]  # NOTE: Change this accordingly to match whether the data is for
+DATA_DIRS = ["data/TimeStampedOriginal/centerImages/"]  # NOTE: Change this accordingly to match whether the data is for
 # training or testing. Should probably modify to use python flags
-LOG_FILES = ["TimeStampedOriginal/approximatedStamps.txt"]
+LOG_FILES = ["data/TimeStampedOriginal/approximatedStamps.txt"]
 GLOBALHEIGHT = 480
 GLOBALWIDTH = 640
 

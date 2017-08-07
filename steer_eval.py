@@ -30,8 +30,8 @@ import math
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-EVAL_DIR = 'tmp/steering_eval'
-CHECKPOINT_DIR = 'tmp/steering_train'
+EVAL_DIR = 'data/tmp/steering_eval'
+CHECKPOINT_DIR = 'data/tmp/steering_train'
 NUM_EXAMPLES = steer_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
 BATCH_SIZE = 128
 
