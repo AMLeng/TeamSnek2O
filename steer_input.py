@@ -106,7 +106,7 @@ def _generate_image_and_label_batch(image, label, min_queue_examples,
 def distorted_inputs(data_dirs, batch_size):  # MUST SET HEIGHT AND WIDTH
     """Construct distorted input for training using the Reader ops.
     Args:
-      data_dir: Path to the data directory.
+      data_dirs: Path to the data directories.
       batch_size: Number of images per batch.
     Returns:
       images: 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
@@ -158,17 +158,17 @@ def distorted_inputs(data_dirs, batch_size):  # MUST SET HEIGHT AND WIDTH
                                            min_queue_examples, batch_size,
                                            shuffle=True)
 
-def inputs(data_dir, batch_size):
+def inputs(data_dirs, batch_size):
     """Construct distorted input for training using the Reader ops.
     Args:
-      data_dir: Path to the data directory.
+      data_dirs: Paths to the data directories.
       batch_size: Number of images per batch.
     Returns:
       images: 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
       labels: 1D tensor of [batch_size] size.
     """
 
-    filenamelist, labellist = get_names_and_labels(data_dir)
+    filenamelist, labellist = get_names_and_labels(data_dirs)
     images = tf.convert_to_tensor(filenamelist, dtype=tf.string)
     labels = tf.convert_to_tensor(labellist, dtype=tf.float32)
 
