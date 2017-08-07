@@ -54,7 +54,7 @@ class DarwinWheel(threading.Thread):
 
     def set_angle(self, angle):
         if DarwinWheel.running:
-            # Translate from -180-180 to 0-255
-            step = int(angle/180 * 127.5 + 127.5)
+            # Translate from -1-1 to 0-255
+            step = int(angle * 127.5 + 127.5)
             print(step)
             foohid.send("FooHID joypad", struct.pack('H4B', 0, step, 0, 0, 0))

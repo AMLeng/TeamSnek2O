@@ -28,13 +28,51 @@ import tensorflow as tf
 # data also require altering the labels
 
 
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 15212 #15212 total images available
-NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 1500
-DATA_DIRS = ["data/TimeStampedOriginal/centerImages/"]  # NOTE: Change this accordingly to match whether the data is for
+NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 14458
+NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 256
+DATA_DIRS = ["data/eurotruck_saves/1/",
+             "data/eurotruck_saves/2/",
+             "data/eurotruck_saves/3/",
+             "data/eurotruck_saves/4/",
+             "data/eurotruck_saves/5/",
+             "data/eurotruck_saves/6/",
+             "data/eurotruck_saves/7/",
+             "data/eurotruck_saves/8/",
+             "data/eurotruck_saves/9/",
+             "data/eurotruck_saves/10/",
+             "data/eurotruck_saves/11/",
+             "data/eurotruck_saves/12/",
+             "data/eurotruck_saves/13/",
+             "data/eurotruck_saves/14/",
+             "data/eurotruck_saves/15/",
+             "data/eurotruck_saves/16/",
+             "data/eurotruck_saves/17/",
+             "data/eurotruck_saves/18/",
+             "data/eurotruck_saves/19/",
+             "data/eurotruck_saves/20/"]  # NOTE: Change this accordingly to match whether the data is for
 # training or testing. Should probably modify to use python flags
-LOG_FILES = ["data/TimeStampedOriginal/approximatedStamps.txt"]
+LOG_FILES = ["data/eurotruck_saves/1/approximatedTimestamps.txt",
+             "data/eurotruck_saves/2/approximatedTimestamps.txt",
+             "data/eurotruck_saves/3/approximatedTimestamps.txt",
+             "data/eurotruck_saves/4/approximatedTimestamps.txt",
+             "data/eurotruck_saves/5/approximatedTimestamps.txt",
+             "data/eurotruck_saves/6/approximatedTimestamps.txt",
+             "data/eurotruck_saves/7/approximatedTimestamps.txt",
+             "data/eurotruck_saves/8/approximatedTimestamps.txt",
+             "data/eurotruck_saves/9/approximatedTimestamps.txt",
+             "data/eurotruck_saves/10/approximatedTimestamps.txt",
+             "data/eurotruck_saves/11/approximatedTimestamps.txt",
+             "data/eurotruck_saves/12/approximatedTimestamps.txt",
+             "data/eurotruck_saves/13/approximatedTimestamps.txt",
+             "data/eurotruck_saves/14/approximatedTimestamps.txt",
+             "data/eurotruck_saves/15/approximatedTimestamps.txt",
+             "data/eurotruck_saves/16/approximatedTimestamps.txt",
+             "data/eurotruck_saves/17/approximatedTimestamps.txt",
+             "data/eurotruck_saves/18/approximatedTimestamps.txt",
+             "data/eurotruck_saves/19/approximatedTimestamps.txt",
+             "data/eurotruck_saves/20/approximatedTimestamps.txt"]
 GLOBALHEIGHT = 480
-GLOBALWIDTH = 640
+GLOBALWIDTH = 905
 
 
 def get_names_and_labels(data_dirs):
@@ -68,6 +106,7 @@ def read_image(filename_queue):
     image_file = tf.read_file(filename_queue[0])
     result.label = filename_queue[1]
     result.uint8image = tf.image.decode_png(image_file)
+
     return result
 
 
@@ -99,7 +138,6 @@ def _generate_image_and_label_batch(image, label, min_queue_examples,
             batch_size=batch_size,
             num_threads=16,
             capacity=min_queue_examples + 3 * batch_size)
-
     return images, tf.reshape(label_batch, [batch_size])
 
 
@@ -147,7 +185,7 @@ def distorted_inputs(data_dirs, batch_size):  # MUST SET HEIGHT AND WIDTH
     read_input.label.set_shape([])
 
     # Ensure that the random shuffling has good mixing properties.
-    min_fraction_of_examples_in_queue = 0.4
+    min_fraction_of_examples_in_queue = 0.1
     min_queue_examples = int(NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN * min_fraction_of_examples_in_queue)
     print('Filling queue with %d images before starting to train. '
           'This will take a few minutes.' % min_queue_examples)
@@ -156,7 +194,7 @@ def distorted_inputs(data_dirs, batch_size):  # MUST SET HEIGHT AND WIDTH
     # Generate a batch of images and labels by building up a queue of examples.
     return _generate_image_and_label_batch(float_image, read_input.label,
                                            min_queue_examples, batch_size,
-                                           shuffle=True)
+                                           shuffle=False)
 
 def inputs(data_dirs, batch_size):
     """Construct distorted input for training using the Reader ops.

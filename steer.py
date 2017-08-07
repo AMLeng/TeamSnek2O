@@ -37,9 +37,9 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # Basic model parameters.
-BATCH_SIZE = 128
+BATCH_SIZE = 10
 DATA_DIRS = steer_input.DATA_DIRS
-EVAL_DATA_DIR = "TimeStampedOriginal/centerImages/"
+EVAL_DATA_DIR = "data/eurotruck/1/data/"
 
 # Global constants describing the data set.
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = steer_input.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN

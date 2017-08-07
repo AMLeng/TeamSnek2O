@@ -23,8 +23,8 @@ class WindowsWheel(threading.Thread):
 
     def set_angle(self, angle):
         if WindowsWheel.running:
-            # translating from -180-180 to 0x0 to 0x8000
-            step = int(angle / 180 * 16384 + 16384)
+            # translating from -1-1 to 0x0 to 0x8000
+            step = int(angle * 16384 + 16384)
             self.joystick.set_axis(pyvjoy.constants.HID_USAGE_X, step)
             # For some reason running this line makes it so it doesn't update. Yup.
             # self.joystick.update()
