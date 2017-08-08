@@ -32,7 +32,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 NUM_STEPS_PER_EPOCH_FOR_TRAIN =(int) (steer.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN/steer.BATCH_SIZE)
-STEPS_TO_TRAIN = 712 # STEPS to train. EPOCHS is given by NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN (in steer_input file), divided by STEPS_TO_TRAIN*128
+STEPS_TO_TRAIN = 120 # STEPS to train. EPOCHS is given by NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN (in steer_input file), divided by STEPS_TO_TRAIN*128
 LOG_RATE = NUM_STEPS_PER_EPOCH_FOR_TRAIN # in terms of STEPS. If set to NUM_STEPS_PER_EPOCH_FOR_TRAIN, logs once per epoch
 TRAINING_DIR = "data/tmp/steering_train"
 
@@ -73,7 +73,7 @@ def train(path_to_save):
                 return tf.train.SessionRunArgs(loss)  # Asks for loss value.
 
             def after_run(self, run_context, run_values):
-                # if self._step % LOG_RATE == 0:
+                if self._step % LOG_RATE == 0:
                     current_time = time.time()
                     duration = current_time - self._start_time
                     self._start_time = current_time
