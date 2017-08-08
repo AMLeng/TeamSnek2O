@@ -17,17 +17,18 @@ This program is based on a modified version of the [TensorFlow CIFAR-10 CNN tuto
 - [OpenCV Python bindings](http://docs.opencv.org/3.2.0/d6/d00/tutorial_py_root.html)
 - [Pygame](https://www.pygame.org/news)
 - [Numpy](https://github.com/numpy/numpy)
-- [PIL](http://www.pythonware.com/products/pil/)
 - **Linux**
-  - [screeninfo](https://pypi.python.org/pypi/screeninfo)
   - [python-uinput](https://github.com/tuomasjjrasanen/python-uinput)
+  - [screeninfo](https://pypi.python.org/pypi/screeninfo) (recommended)
 - **macOS**
+  - [PIL](http://www.pythonware.com/products/pil/)
   - [PyObjC/AppKit](https://pythonhosted.org/pyobjc/)
   - [foohid](https://github.com/unbit/foohid-py)
     - Make sure to install the latest version from GitHub, `pip3` doesn't contain the latest release 0.2.
 - **Windows**
-  - [pywin32](https://sourceforge.net/projects/pywin32/)
+  - [PIL](http://www.pythonware.com/products/pil/)
   - [vJoy](http://vjoystick.sourceforge.net/site/)
+  - [pywin32](https://sourceforge.net/projects/pywin32/) (recommended)
 
 #### Executables
 `steer_train.py` and `steer_eval.py` are the two main executables, with self-evident names to match. `steer_train.py` should work out of the box, while `steer_eval.py` requires a saved checkpoint (`.ckpt`) file to load in variable values (saved automatically by `steer_train.py`.)
