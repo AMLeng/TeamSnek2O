@@ -28,7 +28,7 @@ import tensorflow as tf
 # data also require altering the labels
 
 
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 14458
+NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 14458 #15212
 NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 256
 DATA_DIRS = ["data/eurotruck_saves/1/",
              "data/eurotruck_saves/2/",
@@ -49,7 +49,8 @@ DATA_DIRS = ["data/eurotruck_saves/1/",
              "data/eurotruck_saves/17/",
              "data/eurotruck_saves/18/",
              "data/eurotruck_saves/19/",
-             "data/eurotruck_saves/20/"]  # NOTE: Change this accordingly to match whether the data is for
+             "data/eurotruck_saves/20/"]  #["data/TimeStampedOriginal/centerImages/"]
+# NOTE: Change this accordingly to match whether the data is for
 # training or testing. Should probably modify to use python flags
 LOG_FILES = ["data/eurotruck_saves/1/approximatedTimestamps.txt",
              "data/eurotruck_saves/2/approximatedTimestamps.txt",
@@ -70,9 +71,9 @@ LOG_FILES = ["data/eurotruck_saves/1/approximatedTimestamps.txt",
              "data/eurotruck_saves/17/approximatedTimestamps.txt",
              "data/eurotruck_saves/18/approximatedTimestamps.txt",
              "data/eurotruck_saves/19/approximatedTimestamps.txt",
-             "data/eurotruck_saves/20/approximatedTimestamps.txt"]
+             "data/eurotruck_saves/20/approximatedTimestamps.txt"] #["data/TimeStampedOriginal/approximatedStamps.txt"]
 GLOBALHEIGHT = 480
-GLOBALWIDTH = 905
+GLOBALWIDTH = 905 #640
 
 
 def get_names_and_labels(data_dirs):
@@ -185,7 +186,7 @@ def distorted_inputs(data_dirs, batch_size):  # MUST SET HEIGHT AND WIDTH
     read_input.label.set_shape([])
 
     # Ensure that the random shuffling has good mixing properties.
-    min_fraction_of_examples_in_queue = 0.1
+    min_fraction_of_examples_in_queue = 0.4
     min_queue_examples = int(NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN * min_fraction_of_examples_in_queue)
     print('Filling queue with %d images before starting to train. '
           'This will take a few minutes.' % min_queue_examples)
@@ -194,7 +195,7 @@ def distorted_inputs(data_dirs, batch_size):  # MUST SET HEIGHT AND WIDTH
     # Generate a batch of images and labels by building up a queue of examples.
     return _generate_image_and_label_batch(float_image, read_input.label,
                                            min_queue_examples, batch_size,
-                                           shuffle=False)
+                                           shuffle=True)
 
 def inputs(data_dirs, batch_size):
     """Construct distorted input for training using the Reader ops.
