@@ -123,7 +123,7 @@ class RecordingThread(threading.Thread):
 
                 if DEBUG:
                     print(pygame.event.get())
-                axis = self.joystick.get_axis(STEERING_AXIS) * 180  # -180 to 180 "degrees"
+                axis = self.joystick.get_axis(STEERING_AXIS)  # -180 to 180 "degrees"
 
                 # Save frame every 150ms
                 timestamp = self.current_milli_time()

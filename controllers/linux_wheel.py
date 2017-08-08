@@ -4,8 +4,8 @@ import uinput
 class LinuxWheel(threading.Thread):
     angle = 0
     events = (
-        uinput.ABS_X + (-180, 180, 0, 0),
-        uinput.ABS_Y + (-180, 180, 0, 0),
+        uinput.ABS_X + (-1, 1, 0, 0),
+        uinput.ABS_Y + (-1, 1, 0, 0),
         uinput.BTN_JOYSTICK,
         )
     device = uinput.Device(events)
