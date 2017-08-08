@@ -109,7 +109,7 @@ def average_gradients(tower_grads):
 
 def train(path_to_save):
     """Train for a number of steps."""
-    with tf.Graph().as_default():
+    with tf.Graph().as_default(), tf.device('/cpu:0'):
 
         global_step = tf.get_variable(
             'global_step', [],
@@ -133,8 +133,7 @@ def train(path_to_save):
         # Get images and labels
         # Force input pipeline to CPU:0 to avoid operations sometimes ending up on
         # GPU and resulting in a slow down.
-        with tf.device('/cpu:0'):
-            images, labels = steer.distorted_inputs()
+        images, labels = steer.distorted_inputs()
         print("Images read")
         sys.stdout.flush()
 
