@@ -32,6 +32,9 @@ This program is based on a modified version of the [TensorFlow CIFAR-10 CNN tuto
 
 #### Executables
 `steer_train.py` and `steer_eval.py` are the two main executables, with self-evident names to match. `steer_train.py` should work out of the box, while `steer_eval.py` requires a saved checkpoint (`.ckpt`) file to load in variable values (saved automatically by `steer_train.py`.)
+If using multiple GPUs, use `steer_train_multi.py`.
+
+To capture data from ETS2, use `eurotruck_processing.py`. 
 
 #### Useful constants
 - `steer_train.py`
@@ -40,9 +43,18 @@ This program is based on a modified version of the [TensorFlow CIFAR-10 CNN tuto
 - `steer_input.py`
   - `NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN`: Self evident. Set as high as possible without exceeding RAM.
   - `NUM_EXAMPLES_PER_EPOCH_FOR_EVAL`: Self evident. Set as high as possible without exceeding RAM.
+- `eurotruck_processing.py`
+  - `CONTROLLER`: Which controller to capture steering data from. 0 is usually right.
+    - If you need help figuring out which one it is, use [jstest-gtk](https://github.com/Grumbel/jstest-gtk) (Linux), [Controllers Lite](https://itunes.apple.com/us/app/controllers-lite/id673660806?mt=12) (Darwin), or [the system Game Controllers utility](https://support.xbox.com/en-US/xbox-on-windows/accessories/calibrate-xbox-360-controller-for-windows) (Windows.)
+  - `STEERING_AXIS`: Which axis on the controller to capture data from.
+  - `SCREEN`: The screen to capture data from. If you've got only one screen, 0 is correct.
+  - `WRITE_FREQUENCY`: How often to capture data. Experimental testing has shown this value doesn't always work properly, and data is often captured more slowly.
+  - `IMAGE_FRONT_BORDER_[]`: The *absolute* coordinates of the [] side of the image
+    - e.g. for a 1440x1080 image centered on a 1920x1080 screen: `LEFT = 240`, `RIGHT = 1680`, `TOP = 0`, `BOTTOM = 0`
+  - `SAVE_HEIGHT`: What height to scale the image down to. Aspect ratio is maintained.
  
 #### Running
-`steer_train.py` can be passed an optional command-line argument with the flag `--save` to attempt to load from a previous checkpoint, with an optional path to specify the directory of the checkpoint.
+- `steer_train.py` can be passed an optional command-line argument with the flag `--save` to attempt to load from a previous checkpoint, with an optional path to specify the directory of the checkpoint.
 
 #### Troubleshooting
 
