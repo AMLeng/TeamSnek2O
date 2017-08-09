@@ -40,28 +40,9 @@ SAVE_HEIGHT = 480
 DEBUG = False
 
 
-class RecordingThread(threading.Thread):
-    lock = threading.Lock()
-    running = True
-
-    image_queue = queue.Queue(maxsize=0)
+class MakeFrame:
     cached_size = None
-
-    def __init__(self):
-        threading.Thread.__init__(self, daemon=True)
-        with RecordingThread.lock:
-            RecordingThread.running = True
-
-        pygame.init()
-        pygame.joystick.init()
-        self.joystick = pygame.joystick.Joystick(CONTROLLER)
-        self.joystick.init()
-
-        if not os.path.exists("captured/"):
-            os.mkdir("captured")
-
-    def current_milli_time(self):
-        return int(round(time.time() * 1000))
+    use_mss = platform.system().startswith('Linux')
 
     def get_screen_bbox(self):
         '''
@@ -101,6 +82,55 @@ class RecordingThread(threading.Thread):
 
         return self.cached_size[0], self.cached_size[1], self.cached_size[2], self.cached_size[3]
 
+    def make_frame(self):
+        # Capture the whole game
+
+        if self.use_mss:
+            sct = mss()
+            image_raw = sct.shot()
+            frame = np.array(image_raw)
+            main = frame[self.get_screen_bbox()]
+        else:
+            frame_raw = ImageGrab.grab(bbox=self.get_screen_bbox())
+            main = np.uint8(frame_raw)
+            main = cv2.cvtColor(main, cv2.COLOR_BGR2RGB)
+
+        # frame = Image.frombytes('RGB', (IMAGE_FRONT_BORDER_TOP, IMAGE_FRONT_BORDER_LEFT), image)
+        # main = frame[IMAGE_FRONT_BORDER_TOP:IMAGE_FRONT_BORDER_BOTTOM,
+        #       IMAGE_FRONT_BORDER_LEFT:IMAGE_FRONT_BORDER_RIGHT]
+
+        # gray = cv2.cvtColor(main, cv2.COLOR_BGR2GRAY)
+        # blur_gray = cv2.GaussianBlur(gray, (3, 3), 0)
+        # edges = cv2.Canny(blur_gray, 50, 150)
+        # dilated = cv2.dilate(edges, (3,3), iterations=2)
+
+        # Resize image to save some space (height = 100px)
+        ratio = main.shape[1] / main.shape[0]
+        return cv2.resize(main, (round(ratio * SAVE_HEIGHT), SAVE_HEIGHT))
+
+
+class RecordingThread(threading.Thread):
+    lock = threading.Lock()
+    running = True
+
+    image_queue = queue.Queue(maxsize=0)
+
+    def __init__(self):
+        threading.Thread.__init__(self, daemon=True)
+        with RecordingThread.lock:
+            RecordingThread.running = True
+
+        pygame.init()
+        pygame.joystick.init()
+        self.joystick = pygame.joystick.Joystick(CONTROLLER)
+        self.joystick.init()
+
+        if not os.path.exists("captured/"):
+            os.mkdir("captured")
+
+    def current_milli_time(self):
+        return int(round(time.time() * 1000))
+
     def stop(self):
         with RecordingThread.lock:
             RecordingThread.running = False
@@ -109,38 +139,15 @@ class RecordingThread(threading.Thread):
 
         timestamp = 0
 
-        use_mss = platform.system().startswith('Linux')
+        framemaker = MakeFrame()
 
         while RecordingThread.running:
             if self.current_milli_time() - timestamp > WRITE_FREQUENCY:
+
+                frame = framemaker.make_frame()
+
                 pygame.event.pump()
                 # Capture the whole game
-
-                if use_mss:
-                    sct = mss()
-                    image_raw = sct.shot()
-                    frame = np.array(image_raw)
-                    main = frame[self.get_screen_bbox()]
-                else:
-                    frame_raw = ImageGrab.grab(bbox=self.get_screen_bbox())
-                    main = np.uint8(frame_raw)
-                    main = cv2.cvtColor(main, cv2.COLOR_BGR2RGB)
-
-                # frame = Image.frombytes('RGB', (IMAGE_FRONT_BORDER_TOP, IMAGE_FRONT_BORDER_LEFT), image)
-                # main = frame[IMAGE_FRONT_BORDER_TOP:IMAGE_FRONT_BORDER_BOTTOM,
-                #       IMAGE_FRONT_BORDER_LEFT:IMAGE_FRONT_BORDER_RIGHT]
-
-                # gray = cv2.cvtColor(main, cv2.COLOR_BGR2GRAY)
-                # blur_gray = cv2.GaussianBlur(gray, (3, 3), 0)
-                # edges = cv2.Canny(blur_gray, 50, 150)
-                # dilated = cv2.dilate(edges, (3,3), iterations=2)
-
-                # Resize image to save some space (height = 100px)
-                ratio = main.shape[1] / main.shape[0]
-                resized = cv2.resize(main, (round(ratio * SAVE_HEIGHT), SAVE_HEIGHT))
-
-                # cv2.imshow('cap', dilated)
-                # cv2.imshow('resized', resized)
 
                 if DEBUG:
                     print(pygame.event.get())
@@ -148,7 +155,7 @@ class RecordingThread(threading.Thread):
 
                 # Save frame every 150ms
                 timestamp = self.current_milli_time()
-                self.image_queue.put((resized, timestamp, axis))
+                self.image_queue.put((frame, timestamp, axis))
 
     def get_frame(self):
         """
