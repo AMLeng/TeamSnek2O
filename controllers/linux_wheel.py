@@ -29,4 +29,3 @@ class LinuxWheel(threading.Thread):
     def set_angle(self, angle):
         if LinuxWheel.running:
             self.device.emit(uinput.ABS_X, angle)
-            print(angle)

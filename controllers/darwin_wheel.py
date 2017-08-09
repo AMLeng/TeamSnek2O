@@ -45,8 +45,9 @@ class DarwinWheel(threading.Thread):
 
     def stop(self):
         with DarwinWheel.lock:
-            DarwinWheel.running = False
             foohid.destroy("FooHID joypad")
+            DarwinWheel.running = False
+            print("yay")
 
     # Don't think anything needs to happen here
     def run(self):
