@@ -28,6 +28,7 @@ class WritingThread(threading.Thread):
         while WritingThread.running:
             frame = self.framemaker.make_frame()
             image_tensor = tf.image.decode_image(frame)
+            logits = steer.inference(image_tensor)
 
             with tf.Graph().as_default():
 
@@ -56,7 +57,7 @@ class WritingThread(threading.Thread):
                         print('No checkpoint file found')
                         return
 
-                print(sess.run())
+                print(sess.run(logits))
 
 if __name__ == "__main__":
     wt = WritingThread(MakeFrames())

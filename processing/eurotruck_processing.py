@@ -41,17 +41,16 @@ DEBUG = False
 
 
 class MakeFrames:
-    cached_size = None
+    cached_size = [None, None, None, None]
     use_mss = platform.system().startswith('Linux')
 
     def get_screen_bbox(self):
-        '''
-        Query the screen size. OS specific implementation.
-        :return: width, height
-        '''
+
         # OS checking because no good cross compatibility
 
-        if self.cached_size is None:
+        # If you're reading this: look, I'm sorry. I just wanted to write this quickly, it didn't need to be extensible
+        # or anything
+        if self.cached_size == [None, None, None, None]:
             screen_id = SCREEN
             if screen_id is None:
                 screen_id = 0
@@ -73,14 +72,22 @@ class MakeFrames:
 
             if IMAGE_FRONT_BORDER_LEFT is None:
                 self.cached_size[0] = height
+            else:
+                self.cached_size[0] = IMAGE_FRONT_BORDER_LEFT
             if IMAGE_FRONT_BORDER_RIGHT is None:
                 self.cached_size[1] = height
+            else:
+                self.cached_size[1] = IMAGE_FRONT_BORDER_RIGHT
             if IMAGE_FRONT_BORDER_TOP is None:
                 self.cached_size[2] = width
+            else:
+                self.cached_size[2] = IMAGE_FRONT_BORDER_TOP
             if IMAGE_FRONT_BORDER_BOTTOM is None:
                 self.cached_size[3] = width
+            else:
+                self.cached_size[3] = IMAGE_FRONT_BORDER_BOTTOM
 
-        return self.cached_size[0], self.cached_size[1], self.cached_size[2], self.cached_size[3]
+        return self.cached_size[0],self.cached_size[1], self.cached_size[2], self.cached_size[3]
 
     def make_frame(self):
         # Capture the whole game
@@ -89,14 +96,17 @@ class MakeFrames:
             sct = mss()
             image_raw = sct.shot()
             frame = np.array(image_raw)
-            main = frame[self.get_screen_bbox()]
         else:
-            frame_raw = ImageGrab.grab(bbox=self.get_screen_bbox())
-            main = np.uint8(frame_raw)
-            main = cv2.cvtColor(main, cv2.COLOR_BGR2RGB)
+            # frame_raw = ImageGrab.grab(bbox=self.get_screen_bbox())
+            frame_raw = ImageGrab.grab()
+            frame = np.uint8(frame_raw)
+
+        left, right, top, bottom = self.get_screen_bbox()
+        cap = frame[top:bottom, left:right]
+        main = cv2.cvtColor(cap, cv2.COLOR_BGR2RGB)
 
         # frame = Image.frombytes('RGB', (IMAGE_FRONT_BORDER_TOP, IMAGE_FRONT_BORDER_LEFT), image)
-        # main = frame[IMAGE_FRONT_BORDER_TOP:IMAGE_FRONT_BORDER_BOTTOM,
+        # cap = frame[IMAGE_FRONT_BORDER_TOP:IMAGE_FRONT_BORDER_BOTTOM,
         #       IMAGE_FRONT_BORDER_LEFT:IMAGE_FRONT_BORDER_RIGHT]
 
         # gray = cv2.cvtColor(main, cv2.COLOR_BGR2GRAY)
