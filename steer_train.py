@@ -25,6 +25,7 @@ import time
 import sys
 import argparse
 import tensorflow as tf
+from tensorflow.python.client import timeline
 import steer
 
 import os
@@ -67,12 +68,14 @@ def train(path_to_save):
             def begin(self):
                 self._step = -1
                 self._start_time = time.time()
+                self.average = 0
 
             def before_run(self, run_context):
                 self._step += 1
                 return tf.train.SessionRunArgs(loss)  # Asks for loss value.
 
             def after_run(self, run_context, run_values):
+                self.average += run_values.results
                 if self._step % LOG_RATE == 0:
                     current_time = time.time()
                     duration = current_time - self._start_time
@@ -88,6 +91,11 @@ def train(path_to_save):
                     print(format_str % (datetime.now(), self._step, loss_value,
                                         examples_per_sec, sec_per_batch))
                     sys.stdout.flush()
+                if self._step % NUM_STEPS_PER_EPOCH_FOR_TRAIN == 0:
+                    format_str = ('EPOCH AVERAGE LOSS = %.5f')
+                    epoch_average = self.average/float(NUM_STEPS_PER_EPOCH_FOR_TRAIN)
+                    print(format_str % (epoch_average))
+                    self.average = 0
 
         print("Beginning Training")
         with tf.train.MonitoredTrainingSession(
@@ -122,7 +130,13 @@ def train(path_to_save):
                     return
             while not mon_sess.should_stop():
                 sys.stdout.flush()
-                mon_sess.run(train_op)
+                run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+                run_metadata = tf.RunMetadata()
+                mon_sess.run(train_op, options = run_options, run_metadata = run_metadata)
+                tl = timeline.Timeline(run_metadata.step_stats)
+                ctf = tl.generate_chrome_trace_format()
+                with open('timeline.json', 'w') as f:
+                    f.write(ctf)
 
 
 # TODO add args
