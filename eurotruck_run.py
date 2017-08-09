@@ -4,7 +4,7 @@ import sys
 import numpy as np
 import time
 import platform
-
+import atexit
 import steer
 
 from processing.eurotruck_processing import MakeFrames
@@ -74,28 +74,30 @@ class WritingThread(threading.Thread):
                     return
 
 
-                try:
-                    while WritingThread.running:
-                        start_time = time.time()
+                while WritingThread.running:
+                    start_time = time.time()
 
-                        frame = self.framemaker.make_frame()
-                        '''
-                        image_data = np.asarray(frame)
-                        image_tensor = tf.convert_to_tensor(image_data)
-                        cast_tensor = tf.cast(image_tensor, tf.float32)
-                        reshaped_tensor = tf.expand_dims(cast_tensor, 0)
-                        '''
-                        frame_data = np.expand_dims(np.asarray(frame), 0).astype(float)
-                        angle = sess.run(logits, feed_dict={image_placeholder: frame_data})
+                    frame = self.framemaker.make_frame()
+                    '''
+                    image_data = np.asarray(frame)
+                    image_tensor = tf.convert_to_tensor(image_data)
+                    cast_tensor = tf.cast(image_tensor, tf.float32)
+                    reshaped_tensor = tf.expand_dims(cast_tensor, 0)
+                    '''
+                    frame_data = np.expand_dims(np.asarray(frame), 0).astype(float)
+                    angle = sess.run(logits, feed_dict={image_placeholder: frame_data})
 
 
-                        self.wheel.set_angle(angle)
-                        print(angle, 1/(time.time() - start_time))
-                except Exception as e:
-                    print(e)
-                    self.stop()
+                    self.wheel.set_angle(angle)
+                    print(angle, 1/(time.time() - start_time))
+
+wt = WritingThread(MakeFrames())
+
+def kill():
+    wt.stop()
+
+atexit.register(kill)
 
 if __name__ == "__main__":
-    wt = WritingThread(MakeFrames())
     wt.start()
     wt.join()
