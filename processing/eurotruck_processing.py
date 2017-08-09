@@ -40,7 +40,7 @@ SAVE_HEIGHT = 480
 DEBUG = False
 
 
-class MakeFrame:
+class MakeFrames:
     cached_size = None
     use_mss = platform.system().startswith('Linux')
 
@@ -139,7 +139,7 @@ class RecordingThread(threading.Thread):
 
         timestamp = 0
 
-        framemaker = MakeFrame()
+        framemaker = MakeFrames()
 
         while RecordingThread.running:
             if self.current_milli_time() - timestamp > WRITE_FREQUENCY:
