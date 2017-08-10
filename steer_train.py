@@ -32,7 +32,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 NUM_STEPS_PER_EPOCH_FOR_TRAIN =(int) (steer.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN/steer.BATCH_SIZE)
-STEPS_TO_TRAIN = 120 # STEPS to train. EPOCHS is given by NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN (in steer_input file), divided by STEPS_TO_TRAIN*128
+STEPS_TO_TRAIN = 200 # STEPS to train. EPOCHS is given by NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN (in steer_input file), divided by STEPS_TO_TRAIN*128
 LOG_RATE = NUM_STEPS_PER_EPOCH_FOR_TRAIN # in terms of STEPS. If set to NUM_STEPS_PER_EPOCH_FOR_TRAIN, logs once per epoch
 TRAINING_DIR = "data/tmp/steering_train"
 

@@ -29,7 +29,7 @@ import tensorflow as tf
 
 
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 14458 #15212
-NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 256
+NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 128
 DATA_DIRS = ["data/eurotruck_saves/1/",
              "data/eurotruck_saves/2/",
              "data/eurotruck_saves/3/",
