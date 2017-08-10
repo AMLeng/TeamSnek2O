@@ -18,6 +18,7 @@ This program is based on a modified version of the [TensorFlow CIFAR-10 CNN tuto
 - [Pygame](https://www.pygame.org/news)
 - [Numpy](https://github.com/numpy/numpy)
 - **Linux**
+  - [mss](https://pypi.python.org/pypi/mss/)
   - [python-uinput](https://github.com/tuomasjjrasanen/python-uinput)
   - [screeninfo](https://pypi.python.org/pypi/screeninfo) (recommended)
 - **macOS**
@@ -63,4 +64,4 @@ To capture data from ETS2, use `eurotruck_processing.py`.
     - foohid-py isn't updated to the latest version 0.2, and is probably getting 2.7 and 3.x confused. Install using `sudo pip3 install git+git://github.com/unbit/foohid-py.git
  ` instead of `sudo pip3 install foodhid`
   - `unable to open it_unbit_foohid service` when trying to run ETS2 
-    - Bug in foodhid. Run `sudo kextunload /Library/Extensions/foohid.kext;sudo rm -rf /System/Library/Extensions/foohid.kext` then reinstall foodhid. If you encounter any errors, try restarting. Kexts are fun like that.
+    - Bug in foodhid. Try restarting your computer. If that doesn't work, run `sudo kextunload /Library/Extensions/foohid.kext;sudo rm -rf /System/Library/Extensions/foohid.kext` then reinstall foodhid. If you encounter any errors, try restarting. Kexts are fun like that.
