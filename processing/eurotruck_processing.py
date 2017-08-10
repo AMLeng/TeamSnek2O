@@ -92,17 +92,18 @@ class MakeFrames:
     def make_frame(self):
         # Capture the whole game
 
+        left, right, top, bottom = self.get_screen_bbox()
+
         if self.use_mss:
             sct = mss()
-            image_raw = sct.shot()
-            frame = np.array(image_raw)
+            image_raw = sct.grab({'top': top, 'left': left, 'width': right-left, 'height': bottom-top})
+            cap = np.array(image_raw)
         else:
             # frame_raw = ImageGrab.grab(bbox=self.get_screen_bbox())
             frame_raw = ImageGrab.grab()
             frame = np.uint8(frame_raw)
+            cap = frame[top:bottom, left:right]
 
-        left, right, top, bottom = self.get_screen_bbox()
-        cap = frame[top:bottom, left:right]
         main = cv2.cvtColor(cap, cv2.COLOR_BGR2RGB)
 
         # frame = Image.frombytes('RGB', (IMAGE_FRONT_BORDER_TOP, IMAGE_FRONT_BORDER_LEFT), image)
