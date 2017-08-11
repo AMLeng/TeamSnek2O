@@ -1,5 +1,4 @@
 import foohid
-import random
 import threading
 import struct
 
