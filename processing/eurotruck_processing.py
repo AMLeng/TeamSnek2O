@@ -5,11 +5,14 @@ import numpy as np
 import cv2
 import time
 import os
-# Deprecated because memory leak
-# from mss import mss
-from PIL import ImageGrab
 import shutil
 import platform
+
+# Deprecated on Darwin and Windows because memory leak, still active on Linux because ImageGrab has no Linux support
+if platform.system().startswith('Linux'):
+    from mss import mss
+else:
+    from PIL import ImageGrab
 
 if platform.system().startswith('Linux'):
     from screeninfo import get_monitors
@@ -25,6 +28,7 @@ SCREEN = 0
 # Write frequency in ms
 WRITE_FREQUENCY = 150
 
+# Set to None for automatic setting
 # For 3360x2100 screen
 IMAGE_FRONT_BORDER_LEFT = 108
 IMAGE_FRONT_BORDER_RIGHT = 3258
@@ -34,6 +38,86 @@ IMAGE_FRONT_BORDER_BOTTOM = 2070
 SAVE_HEIGHT = 480
 
 DEBUG = False
+
+
+class MakeFrames:
+    cached_size = [None, None, None, None]
+    use_mss = platform.system().startswith('Linux')
+
+    def get_screen_bbox(self):
+
+        # OS checking because no good cross compatibility
+
+        # If you're reading this: look, I'm sorry. I just wanted to write this quickly, it didn't need to be extensible
+        # or anything
+        if self.cached_size == [None, None, None, None]:
+            screen_id = SCREEN
+            if screen_id is None:
+                screen_id = 0
+            if platform.platform().startswith('Linux'):
+                screen_res = get_monitors()[screen_id]
+                width = screen_res.width
+                height = screen_res.height
+            elif platform.system().startswith('Darwin'):
+                screen_size = AppKit.NSScreen.screens()[SCREEN].frame().size
+                width = screen_size.width
+                height = screen_size.height
+            elif platform.system().startswith('Windows'):
+                width = GetSystemMetrics(0)
+                height = GetSystemMetrics(1)
+            else:
+                print("Could not get screen size on unsupported OS " + platform.system() + ", defaulting to 640x480")
+                width = 640
+                height = 480
+
+            if IMAGE_FRONT_BORDER_LEFT is None:
+                self.cached_size[0] = height
+            else:
+                self.cached_size[0] = IMAGE_FRONT_BORDER_LEFT
+            if IMAGE_FRONT_BORDER_RIGHT is None:
+                self.cached_size[1] = height
+            else:
+                self.cached_size[1] = IMAGE_FRONT_BORDER_RIGHT
+            if IMAGE_FRONT_BORDER_TOP is None:
+                self.cached_size[2] = width
+            else:
+                self.cached_size[2] = IMAGE_FRONT_BORDER_TOP
+            if IMAGE_FRONT_BORDER_BOTTOM is None:
+                self.cached_size[3] = width
+            else:
+                self.cached_size[3] = IMAGE_FRONT_BORDER_BOTTOM
+
+        return self.cached_size[0],self.cached_size[1], self.cached_size[2], self.cached_size[3]
+
+    def make_frame(self):
+        # Capture the whole game
+
+        left, right, top, bottom = self.get_screen_bbox()
+
+        if self.use_mss:
+            sct = mss()
+            image_raw = sct.grab({'top': top, 'left': left, 'width': right-left, 'height': bottom-top})
+            cap = np.array(image_raw)
+        else:
+            # frame_raw = ImageGrab.grab(bbox=self.get_screen_bbox())
+            frame_raw = ImageGrab.grab()
+            frame = np.uint8(frame_raw)
+            cap = frame[top:bottom, left:right]
+
+        main = cv2.cvtColor(cap, cv2.COLOR_BGR2RGB)
+
+        # frame = Image.frombytes('RGB', (IMAGE_FRONT_BORDER_TOP, IMAGE_FRONT_BORDER_LEFT), image)
+        # cap = frame[IMAGE_FRONT_BORDER_TOP:IMAGE_FRONT_BORDER_BOTTOM,
+        #       IMAGE_FRONT_BORDER_LEFT:IMAGE_FRONT_BORDER_RIGHT]
+
+        # gray = cv2.cvtColor(main, cv2.COLOR_BGR2GRAY)
+        # blur_gray = cv2.GaussianBlur(gray, (3, 3), 0)
+        # edges = cv2.Canny(blur_gray, 50, 150)
+        # dilated = cv2.dilate(edges, (3,3), iterations=2)
+
+        # Resize image to save some space (height = 100px)
+        ratio = main.shape[1] / main.shape[0]
+        return cv2.resize(main, (round(ratio * SAVE_HEIGHT), SAVE_HEIGHT))
 
 
 class RecordingThread(threading.Thread):
@@ -58,27 +142,6 @@ class RecordingThread(threading.Thread):
     def current_milli_time(self):
         return int(round(time.time() * 1000))
 
-    def get_screen_bbox(self):
-        '''
-        Query the screen size. OS specific implementation.
-        :return: width, height
-        '''
-        # OS checking because no good cross compatibility
-        screen_id = SCREEN
-        if screen_id is None:
-            screen_id = 0
-        if platform.platform().startswith('Linux'):
-            screen_res = get_monitors()[screen_id]
-            return screen_res.width, screen_res.height
-        elif platform.system().startswith('Darwin'):
-            screen_size = AppKit.NSScreen.screens()[SCREEN].frame().size
-            return screen_size.width, screen_size.height
-        elif platform.system().startswith('Windows'):
-            return GetSystemMetrics(0), GetSystemMetrics(1)
-        else:
-            print("Could not get screen size on unsupported OS " + platform.system() + ", defaulting to 640x480")
-            return 640, 480
-
     def stop(self):
         with RecordingThread.lock:
             RecordingThread.running = False
@@ -87,39 +150,15 @@ class RecordingThread(threading.Thread):
 
         timestamp = 0
 
+        framemaker = MakeFrames()
+
         while RecordingThread.running:
             if self.current_milli_time() - timestamp > WRITE_FREQUENCY:
+
+                frame = framemaker.make_frame()
+
                 pygame.event.pump()
                 # Capture the whole game
-
-                '''
-                sct = mss()
-                width, height = self.get_screen_bbox()
-                image_raw = sct.grab({'top': 0, 'left': 0, 'width': width, 'height': height})
-                image = np.array(image_raw)
-                frame = image
-                '''
-
-                frame_raw = ImageGrab.grab(bbox=(IMAGE_FRONT_BORDER_LEFT, IMAGE_FRONT_BORDER_TOP, IMAGE_FRONT_BORDER_RIGHT, IMAGE_FRONT_BORDER_BOTTOM))
-                frame = np.uint8(frame_raw)
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                main = frame
-
-                # frame = Image.frombytes('RGB', (IMAGE_FRONT_BORDER_TOP, IMAGE_FRONT_BORDER_LEFT), image)
-                # main = frame[IMAGE_FRONT_BORDER_TOP:IMAGE_FRONT_BORDER_BOTTOM,
-                #       IMAGE_FRONT_BORDER_LEFT:IMAGE_FRONT_BORDER_RIGHT]
-
-                # gray = cv2.cvtColor(main, cv2.COLOR_BGR2GRAY)
-                # blur_gray = cv2.GaussianBlur(gray, (3, 3), 0)
-                # edges = cv2.Canny(blur_gray, 50, 150)
-                # dilated = cv2.dilate(edges, (3,3), iterations=2)
-
-                # Resize image to save some space (height = 100px)
-                ratio = main.shape[1] / main.shape[0]
-                resized = cv2.resize(main, (round(ratio * SAVE_HEIGHT), SAVE_HEIGHT))
-
-                # cv2.imshow('cap', dilated)
-                # cv2.imshow('resized', resized)
 
                 if DEBUG:
                     print(pygame.event.get())
@@ -127,7 +166,7 @@ class RecordingThread(threading.Thread):
 
                 # Save frame every 150ms
                 timestamp = self.current_milli_time()
-                self.image_queue.put((resized, timestamp, axis))
+                self.image_queue.put((frame, timestamp, axis))
 
     def get_frame(self):
         """

@@ -45,8 +45,8 @@ class DarwinWheel(threading.Thread):
 
     def stop(self):
         with DarwinWheel.lock:
-            DarwinWheel.running = False
             foohid.destroy("FooHID joypad")
+            DarwinWheel.running = False
 
     # Don't think anything needs to happen here
     def run(self):
@@ -54,7 +54,12 @@ class DarwinWheel(threading.Thread):
 
     def set_angle(self, angle):
         if DarwinWheel.running:
-            # Translate from -1-1 to 0-255
-            step = int(angle * 127.5 + 127.5)
+            # Translate from -1-1 to 180-0-180
+            # The center starts at 0, increases to the right until it hits 128, then wraps around all the way to the
+            # left and decreases until it reaches the middle again.
+            if angle >= 0:
+                step = int(angle * 127.5)
+            else:
+                step = int(255 + angle * 127.5)
             print(step)
             foohid.send("FooHID joypad", struct.pack('H4B', 0, step, 0, 0, 0))
