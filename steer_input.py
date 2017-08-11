@@ -178,6 +178,8 @@ def distorted_inputs(data_dirs, batch_size):  # MUST SET HEIGHT AND WIDTH
     distorted_image = tf.image.random_contrast(distorted_image,
                                                lower=0.2, upper=1.8)
 
+    tf.image.resize_images(distorted_image, tf.constant([GLOBALHEIGHT, GLOBALWIDTH]))
+
     # Subtract the mean and divide by the variance of the pixels.
     float_image = tf.image.per_image_standardization(distorted_image)
 

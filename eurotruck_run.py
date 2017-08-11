@@ -6,10 +6,11 @@ import time
 import platform
 import atexit
 import steer
+import steer_input
 
 from processing.eurotruck_processing import MakeFrames
 
-CHECKPOINT_DIR = 'data/tmp/steering_train'
+CHECKPOINT_DIR = 'data/tmp/steering_train_over'
 
 
 class WritingThread(threading.Thread):
@@ -48,13 +49,14 @@ class WritingThread(threading.Thread):
 
             shape = np.expand_dims(np.asarray(first_image), 0).shape
             image_placeholder = tf.placeholder(tf.float32, shape=(shape))
+            processed = tf.image.resize_images(image_placeholder, tf.constant([steer_input.GLOBALHEIGHT, steer_input.GLOBALWIDTH]))
 
             # Get images and labels
             # Force input pipeline to CPU:0
             #   with tf.device('/cpu:0'):
             # images, labels = steer.inputs()
             steer.BATCH_SIZE = 1
-            logits = steer.inference(image_placeholder)
+            logits = steer.inference(processed)
 
             saver = tf.train.Saver()
             sys.stdout.flush()
